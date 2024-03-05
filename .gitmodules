@@ -1,0 +1,3 @@
+[submodule "deps/libbpf/libbpf"]
+	path = deps/libbpf/libbpf
+	url = git@github.com:libbpf/libbpf.git
