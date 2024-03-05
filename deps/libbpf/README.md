@@ -41,6 +41,18 @@ For compiler, linker, etc.: `clang-14`, `llc-14`, `opt-14`, `llvm-dis-14`, `llvm
 
 ```bash
 sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" -- 14
+
+sudo ln -s $(which clang-14) /usr/bin/clang
+sudo ln -s $(which clang++-14) /usr/bin/clang++
+sudo ln -s $(which llc-14) /usr/bin/llc
+sudo ln -s $(which opt-14) /usr/bin/opt
+sudo ln -s $(which llvm-dis-14) /usr/bin/llvm-dis
+sudo ln -s $(which llvm-objdump-14) /usr/bin/llvm-objdump
+sudo ln -s $(which llvm-config-14) /usr/bin/llvm-config
+sudo ln -s $(which llvm-strip-14) /usr/bin/llvm-strip
+
+sudo ln -s /usr/include/llvm-c-14/llvm-c /usr/include/llvm-c
+sudo ln -s /usr/include/llvm-14/llvm /usr/include/llvm
 ```
 
 ## Installation
@@ -58,14 +70,5 @@ cd ./libbpf/src && make && sudo make install && cd -
 ## Check Installation
 
 ```bash
-dpkg -l | grep libbpf
-ldconfig -p | grep libbpf
-```
-
-## Generate vmlinux.h (Optional)
-
-This requires the installation of `bpftools` (v7.2.0 recommended).
-
-```bash
-bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./kernel/include/vmlinux.h
+./bpftool --version
 ```
