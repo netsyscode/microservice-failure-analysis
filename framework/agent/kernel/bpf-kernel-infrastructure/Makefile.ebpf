@@ -1,0 +1,73 @@
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+ABS_THISDIR := $(realpath $(dir $(THIS_MAKEFILE)))
+CURRENT_DIR := $(shell pwd)
+CURRENT_DIR_NAME := $(shell basename "$(CURRENT_DIR)")
+
+
+UNAME_RELEASE = $(shell uname -r)
+objtree := /lib/modules/$(UNAME_RELEASE)/build
+
+USERINCLUDE := \
+ 	-isystem"$(objtree)"/arch/"$(SRCARCH)"/include/uapi \
+ 	-isystem"$(objtree)"/arch/"$(SRCARCH)"/include/generated/uapi \
+ 	-isystem"$(objtree)"/include/uapi \
+ 	-isystem"$(objtree)"/include/generated/uapi
+
+LINUXINCLUDE := \
+	-isystem"$(objtree)"/arch/"$(SRCARCH)"/include \
+ 	-isystem"$(objtree)"/arch/"$(SRCARCH)"/include/generated \
+ 	-isystem"$(objtree)"/include \
+	$(USERINCLUDE)
+
+CLANG		:=	clang-14
+LLC 		:=	llc-14
+OPT			:=  opt-14
+LLVM_DIS	:=	llvm-dis-14
+OBJDUMP		:=	llvm-objdump-14
+
+CLANG_FLAGS := \
+	-D__KERNEL__ \
+	-D__BPF_TRACING__ \
+	-D__x86_64__ -DUSE_SYSCALL_WRAPPER=1 \
+	-DCONFIG_64BIT \
+	-D__TARGET_ARCH_"$(SRCARCH)" \
+	-Wno-unused-value \
+	-Wno-pointer-sign \
+	-Wno-compare-distinct-pointer-types \
+	-Wunused \
+	-Wall \
+	-Werror
+
+CLANG_CMD := $(CLANG) $(CLANG_FLAGS) \
+	$(LINUXINCLUDE) \
+	-I"$(ABS_THISDIR)"/include \
+	-O2 -emit-llvm -Xclang -disable-llvm-passes
+
+OPT_CMD := $(OPT) -O2 -mtriple=bpf-pc-linux
+
+LLC_CMD := $(LLC) -march=bpf -filetype=obj
+
+sources	:= $(wildcard *.c)
+objects	:= $(patsubst %.c,%,$(sources))
+
+.PHONY: default check_dir_name clean
+
+default: check_dir_name $(objects)
+
+check_dir_name:
+ifeq ($(BUILD_DIR_NAME),)
+	@echo "BUILD_DIR_NAME is empty! Building under template/build/ directory"
+else
+	@echo "building eBPF kernel process into" $(realpath $(BUILD_DIR_NAME))
+endif
+
+BUILD_DIR_NAME ?= ../../build/$(CURRENT_DIR_NAME)/
+
+$(objects): %: %.c
+	mkdir -p "$(BUILD_DIR_NAME)"
+	$(CLANG_CMD) $^ -c -g -o - | $(OPT_CMD) | $(LLVM_DIS) | $(LLC_CMD) -O2 -o "$(BUILD_DIR_NAME)"/$@.o
+	$(OBJDUMP) --source --debug-vars --line-numbers --symbol-description "$(BUILD_DIR_NAME)"/$@.o > "$(BUILD_DIR_NAME)"/$@.objdump
+
+clean: 
+	-$(RM) -r "$(BUILD_DIR_NAME)"
+
