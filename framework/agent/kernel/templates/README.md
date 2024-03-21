@@ -1,4 +1,4 @@
-# EBPF Program Templates
+# eBPF Program Templates
 
 To add a new kernel eBPF program, create a folder with eBPF programs in `*.c` and a `Makefile` in it.
 The `Makefile` should include the relative path of `Makefile.arch` and `Makefile.ebpf`, which looks like below:
@@ -20,6 +20,6 @@ All you need to do is to relatively include `Makefile.arch` and `Makefile.ebpf` 
 
 `make clean` works in the same way.
 
-## Current EBPF Program Templates
+## Current eBPF Program Templates
 
-- `./src/helloworld`: An example program, attached to `tracepoint/syscalls/sys_enter_execve`
+- `./src/hello-world`: An example program, attached to `tracepoint/syscalls/sys_enter_execve`
