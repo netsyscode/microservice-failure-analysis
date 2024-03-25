@@ -1,0 +1,30 @@
+name: Documentation Update
+description: Suggest improvements or report inaccuracies in the documentation
+title: "[DOCS]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Description of the Change\nProvide a clear and concise description of what the documentation update is about."
+  - type: textarea
+    id: reasons
+    attributes:
+      label: Reasons for the Change
+      description: "Explain why these changes are necessary or beneficial."
+    validations:
+      required: true
+  - type: textarea
+    id: areas-affected
+    attributes:
+      label: Areas of the Documentation Affected
+      description: "List the specific sections or pages of the documentation that will be updated."
+  - type: textarea
+    id: proposed-changes
+    attributes:
+      label: Proposed Changes
+      description: "Detail the changes you are proposing."
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      description: "Provide any additional information that might be useful."

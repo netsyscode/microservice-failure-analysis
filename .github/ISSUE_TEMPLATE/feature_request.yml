@@ -1,0 +1,35 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Feature Name\nGive your feature a concise and descriptive name."
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: "Provide a detailed description of the feature."
+    validations:
+      required: true
+  - type: textarea
+    id: motivation-context
+    attributes:
+      label: Motivation and Context
+      description: "Explain why this feature is needed."
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives Considered
+      description: "Discuss any alternative solutions or features."
+  - type: textarea
+    id: potential-impact
+    attributes:
+      label: Potential Impact
+      description: "Describe the potential impact of this feature."
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      description: "Provide any additional information that might be useful."
