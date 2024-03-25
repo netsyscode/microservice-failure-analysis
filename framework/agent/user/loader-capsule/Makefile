@@ -13,7 +13,7 @@ endif
 
 TARGET = loader-capsule
 SRCS = loader.c debug.c
-DEPS = loader.c debug.c debug.h $(SKEL_DIR)/$(SKEL).skel.h
+DEPS = loader.c debug.c debug.h capsule_util.h $(SKEL_DIR)/$(SKEL).skel.h
 
 BUILD_DIR ?= ../build/$(SKEL)
 

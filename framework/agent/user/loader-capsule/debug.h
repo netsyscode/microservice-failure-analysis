@@ -11,6 +11,5 @@
 
 void read_trace_pipe();
 void int_signal_handler(int signo);
-void read_trace_pipe();
 
 #endif
