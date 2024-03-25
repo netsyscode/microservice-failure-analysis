@@ -1,0 +1,6 @@
+./scripts/sync/
+.DS_Store
+
+**/build/
+
+.vscode/

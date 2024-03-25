@@ -1,0 +1,22 @@
+[<MODULE>] <Content> (#<Issue>)
+
+# 示例:
+# [Dependencies] 升级了所有的依赖到最新版本 (#1234)
+# [Bug Fix] 修复了用户登录时的空指针异常 (#1235)
+
+# 可选模块列表:
+# - Functionalities 新功能
+# - Dependencies 依赖更新
+# - Bug Fix 错误修复
+# - Documentation 文档更新
+# - Tests 测试相关
+# - Refactoring 代码重构
+# - Style 代码风格调整
+# - Performance 性能优化
+# ...
+
+# 详细描述:
+# 在这里添加更详细的描述，说明为什么做这个更改，它解决了什么问题。
+# 如果这个提交解决了一个开放的Issue，请在这里提及。
+
+# 注意: 以 '#' 开头的行都会被Git忽略。
