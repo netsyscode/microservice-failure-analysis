@@ -25,7 +25,7 @@ Ensure Istio is installed on your system.
 
 ## Installation
 
-```bash
+```text
 kubectl apply -f ../../deps/istio/istio-1.21.0/samples/bookinfo/platform/kube/bookinfo.yaml
 ```
 
@@ -36,7 +36,7 @@ This part is not contained in this README.
 
 Confirm all services and pods are correctly defined and running:
 
-```bash
+```text
 $ kubectl get services
 NAME          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 details       ClusterIP   10.108.170.218   <none>        9080/TCP   89s
@@ -48,7 +48,7 @@ reviews       ClusterIP   10.103.51.253    <none>        9080/TCP   89s
 
 and
 
-```bash
+```text
 $ kubectl get pods
 NAME                             READY   STATUS    RESTARTS   AGE
 details-v1-698d88b-28k6z         2/2     Running   0          105s
@@ -59,9 +59,41 @@ reviews-v2-5b667bcbf8-srwc4      2/2     Running   0          105s
 reviews-v3-5b9bd44f4-5rj4w       2/2     Running   0          105s
 ```
 
+## Test and Evaluation
+
 To confirm that the Bookinfo application is running, send a request to it by a curl command from some pod, for example from ratings:
 
-```bash
+```text
 $ kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -sS productpage:9080/productpage | grep -o "<title>.*</title>"
 <title>Simple Bookstore App</title>
+```
+
+or run `wrk` in the `loadgen` pod in `loadgen` namespace created by `./evaluation/worload-generator`:
+
+```text
+/ # wrk -t16 -c64 -d30s -R100 http://productpage.default:9080/productpage
+Running 30s test @ http://productpage.default:9080/productpage
+  16 threads and 64 connections
+  Thread calibration: mean lat.: 423.266ms, rate sampling interval: 1035ms
+  Thread calibration: mean lat.: 417.916ms, rate sampling interval: 1036ms
+  Thread calibration: mean lat.: 412.958ms, rate sampling interval: 1036ms
+  Thread calibration: mean lat.: 397.127ms, rate sampling interval: 1035ms
+  Thread calibration: mean lat.: 401.314ms, rate sampling interval: 1031ms
+  Thread calibration: mean lat.: 430.609ms, rate sampling interval: 1041ms
+  Thread calibration: mean lat.: 413.601ms, rate sampling interval: 1037ms
+  Thread calibration: mean lat.: 399.915ms, rate sampling interval: 1036ms
+  Thread calibration: mean lat.: 464.588ms, rate sampling interval: 1044ms
+  Thread calibration: mean lat.: 427.173ms, rate sampling interval: 1037ms
+  Thread calibration: mean lat.: 442.646ms, rate sampling interval: 1036ms
+  Thread calibration: mean lat.: 461.184ms, rate sampling interval: 1043ms
+  Thread calibration: mean lat.: 459.603ms, rate sampling interval: 1053ms
+  Thread calibration: mean lat.: 454.717ms, rate sampling interval: 1050ms
+  Thread calibration: mean lat.: 457.592ms, rate sampling interval: 1060ms
+  Thread calibration: mean lat.: 464.297ms, rate sampling interval: 1041ms
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   703.71ms  508.48ms   2.35s    78.79%
+    Req/Sec     5.19      1.66     7.00     94.70%
+  2883 requests in 30.03s, 14.23MB read
+Requests/sec:     96.00
+Transfer/sec:    485.18KB
 ```
