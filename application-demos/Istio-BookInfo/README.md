@@ -97,3 +97,33 @@ Running 30s test @ http://productpage.default:9080/productpage
 Requests/sec:     96.00
 Transfer/sec:    485.18KB
 ```
+
+## Cleanup
+
+```text
+$ ../../deps/istio/istio-1.21.0/samples/bookinfo/platform/kube/cleanup.sh
+namespace ? [default]
+using NAMESPACE=default
+Application cleanup may take up to one minute
+service "details" deleted
+serviceaccount "bookinfo-details" deleted
+deployment.apps "details-v1" deleted
+service "ratings" deleted
+serviceaccount "bookinfo-ratings" deleted
+deployment.apps "ratings-v1" deleted
+service "reviews" deleted
+serviceaccount "bookinfo-reviews" deleted
+deployment.apps "reviews-v1" deleted
+deployment.apps "reviews-v2" deleted
+deployment.apps "reviews-v3" deleted
+service "productpage" deleted
+serviceaccount "bookinfo-productpage" deleted
+deployment.apps "productpage-v1" deleted
+Application cleanup successful
+```
+
+You might need to [uninstall Istio](../../deps/istio/README.md#uninstallation) too.
+
+## References
+
+- [https://istio.io/latest/docs/examples/bookinfo/](https://istio.io/latest/docs/examples/bookinfo/)

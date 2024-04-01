@@ -1,6 +1,6 @@
 # Manual Installation for Istio
 
-This installation guide is mainly copied from [https://istio.io/latest/docs/](https://istio.io/latest/docs/).
+This installation guide is mainly copied from [https://istio.io/latest/docs/](https://istio.io/latest/docs/) and [https://istio.io/latest/docs/setup/install/istioctl](https://istio.io/latest/docs/setup/install/istioctl).
 Among the current installation methods, we choose to install it with istioctl.
 
 ## Prerequisites
@@ -36,3 +36,18 @@ kubectl label namespace default istio-injection=enabled
 ## Additional Information
 
 By the time this documetation was written, it installs Istio 1.21.0.
+
+## Uninstallation
+
+To completely uninstall Istio from a cluster, run the following command:
+
+```bash
+istioctl uninstall --purge
+```
+
+The optional --purge flag will remove all Istio resources, including cluster-scoped resources that may be shared with other Istio control planes.
+
+## References
+
+- [https://istio.io/latest/docs/](https://istio.io/latest/docs/)
+- [https://istio.io/latest/docs/setup/install/istioctl](https://istio.io/latest/docs/setup/install/istioctl)
