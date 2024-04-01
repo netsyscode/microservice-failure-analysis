@@ -70,5 +70,14 @@ cd ./libbpf/src && make && sudo make install && cd -
 ## Check Installation
 
 ```bash
-./bpftool --version
+dpkg -l | grep libbpf
+ldconfig -p | grep libbpf
+```
+
+## Generate vmlinux.h (Optional)
+
+This requires the installation of `bpftools` (v7.2.0 recommended).
+
+```bash
+bpftool btf dump file /sys/kernel/btf/vmlinux format c > ./kernel/include/vmlinux.h
 ```
