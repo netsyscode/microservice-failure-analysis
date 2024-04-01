@@ -5,4 +5,4 @@
 
 ## Optional
 
-- [istio (v1.21)](./istio/README.md): Required for application-demos/Istio-BookInfo
+- [istio (v1.21.0)](./istio/README.md): Required for application-demos/Istio-BookInfo

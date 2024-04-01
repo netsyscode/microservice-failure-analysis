@@ -32,3 +32,7 @@ echo "export PATH=\$PWD/bin:\$PATH" >> ~/.bashrc
 istioctl install --set profile=demo -y
 kubectl label namespace default istio-injection=enabled
 ```
+
+## Additional Information
+
+By the time this documetation was written, it installs Istio 1.21.0.
