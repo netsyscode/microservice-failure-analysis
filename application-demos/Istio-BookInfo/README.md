@@ -20,8 +20,8 @@ There are 3 versions of the reviews microservice:
 
 ## Prerequisites
 
-Ensure Istio is installed on your system. 
-(In this example, we use Istio v1.21.0).
+- Ensure Istio is installed on your system. (In this example, we use Istio v1.21.0). Check [installation instructions](../../deps/istio/README.md).
+- If you are to deploy this demo with Jaeger, please make sure [jaeger and jaeger tasks are installed via istio](../../deps/istio/Observability.md).
 
 ## Installation
 
@@ -96,6 +96,12 @@ Running 30s test @ http://productpage.default:9080/productpage
   2883 requests in 30.03s, 14.23MB read
 Requests/sec:     96.00
 Transfer/sec:    485.18KB
+```
+
+or run the little test script inside the cluster:
+
+```text
+chmod +x ./test.sh && ./test.sh
 ```
 
 ## Cleanup
