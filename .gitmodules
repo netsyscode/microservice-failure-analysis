@@ -4,3 +4,6 @@
 [submodule "deps/bpftools/bpftools"]
 	path = deps/bpftools/bpftools
 	url = git@github.com:libbpf/bpftool.git
+[submodule "deps/jaeger/jaeger-idl"]
+	path = deps/jaeger/jaeger-idl
+	url = git@github.com:jaegertracing/jaeger-idl.git

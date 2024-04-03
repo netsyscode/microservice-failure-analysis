@@ -104,6 +104,14 @@ or run the little test script inside the cluster:
 chmod +x ./test.sh && ./test.sh
 ```
 
+### Groundtruth trace extraction
+
+This leverages the python program located at `evaluation/trace-extraction/jaeger`:
+
+```text
+cd ../../evaluation/trace-extraction/jaeger/ && python3 jaeger_query.py --jaeger-address $(kubectl -n istio-system get svc tracing -o=jsonpath='{.spec.clusterIP}') --jaeger-port 16685 --service-name productpage.default --start-time "1d ago" && mv ./jaeger_query_results.json ../../../application-demos/Istio-BookInfo/ && cd -
+```
+
 ## Cleanup
 
 ```text
