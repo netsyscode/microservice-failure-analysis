@@ -59,8 +59,8 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(f"{sys.argv[0]} <port>")
         sys.exit(1)
-    with tls_server("0.0.0.0", int(sys.argv[1])):
-        print(f"TLS server (PID {os.getpid()}) is listening on 0.0.0.0:{sys.argv[1]}")
+    with tls_server("127.0.0.1", int(sys.argv[1])):
+        print(f"TLS server (PID {os.getpid()}) is listening on 127.0.0.1:{sys.argv[1]}")
         signal.signal(signal.SIGINT, signal_handler)
         print('Press Ctrl+C')
         signal.pause()

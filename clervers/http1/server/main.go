@@ -65,8 +65,8 @@ func main() {
 		port = defaultPort
 	}
 
-	fmt.Printf("listening on 0.0.0.0:%s\n", port)
-	if err := engine.Run(fmt.Sprintf("0.0.0.0:%s", port)); err != nil {
+	fmt.Printf("listening on 127.0.0.1:%s\n", port)
+	if err := engine.Run(fmt.Sprintf("127.0.0.1:%s", port)); err != nil {
 		log.Fatal(err)
 	}
 }
