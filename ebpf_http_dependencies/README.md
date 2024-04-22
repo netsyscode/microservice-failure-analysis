@@ -1,0 +1,3 @@
+- general_install.sh: script for installing packages for general ebpf support
+- bcc_install.sh: script for installing v0.24.0 of bcc
+- go_install.sh: script for installing Golang
