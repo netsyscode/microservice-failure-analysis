@@ -31,7 +31,7 @@ Installation of dependencies.
 For common libraries: `libelf1`, `libelf-dev`, `zlib1g-dev`, `gcc-multilib`
 
 ```bash
-sudo apt install libelf1 libelf-dev zlib1g-dev
+sudo apt install libelf1 libelf-dev zlib1g-dev wget build-essential lsb-release software-properties-common gnupg
 
 # For error: /usr/include/linux/types.h:5:10: fatal error: 'asm/types.h' file not found
 sudo apt install gcc-multilib 
@@ -70,8 +70,7 @@ cd ./libbpf/src && make && sudo make install && cd -
 ## Check Installation
 
 ```bash
-dpkg -l | grep libbpf
-ldconfig -p | grep libbpf
+find /usr/lib64 -name "libbpf.so"
 ```
 
 ## Generate vmlinux.h (Optional)

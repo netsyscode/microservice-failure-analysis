@@ -6,3 +6,5 @@
 .vscode/
 
 *.txt
+
+./deps/bpftools/bpftools/

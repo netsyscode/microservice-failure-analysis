@@ -36,5 +36,5 @@ cd ./bpftools/src && make && sudo make install && cd -
 ## Check Installation
 
 ```bash
-./bpftool --version
+bpftool --version
 ```
