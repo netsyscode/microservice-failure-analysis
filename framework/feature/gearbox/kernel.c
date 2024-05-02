@@ -1,4 +1,9 @@
+#include "all.h"
+#include "utils.h"
+#include "structs.h"
+#include "map.h"
 #include "header_option.h"
+#include "collection.h"
 
 SEC("tracepoint/syscalls/sys_enter_read")
 int enter_read(struct trace_event_raw_sys_enter *ctx) {

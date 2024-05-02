@@ -40,5 +40,5 @@ The `SEC("sockops")` hook intercepts various socket operations, allowing for a w
   - These include reserving space for, adding, and processing custom TCP header options, significantly enhancing the capability to modify TCP behavior according to the program's needs.
     - For `BPF_SOCK_OPS_TCP_CONNECT_CB`, `BPF_SOCK_OPS_ACTIVE_ESTABLISHED_CB`, and `BPF_SOCK_OPS_PASSIVE_ESTABLISHED_CB`, overwrite TCP Option injection with `bpf_sock_ops_cb_flags_set()`
     - For `BPF_SOCK_OPS_HDR_OPT_LEN_CB`, reserve space for injected structure `struct tcp_int_opt` with `bpf_reserve_hdr_opt()`
-    - For `BPF_SOCK_OPS_WRITE_HDR_OPT_CB`, lookup context by tuple in BPF map `tuple_context_map`, construct `struct tcp_int_opt`, and inject it with `bpf_store_hdr_opt()`
-    - For `BPF_SOCK_OPS_PARSE_HDR_OPT_CB`, load `struct tcp_int_opt` from TCP Option, parse it to construct `struct MsgContext`, and store it with `struct flow_tuple` as key in BPF map `tuple_context_map`
+    - For `BPF_SOCK_OPS_WRITE_HDR_OPT_CB`, lookup context by tuple in BPF map `flow_context_map`, construct `struct tcp_int_opt`, and inject it with `bpf_store_hdr_opt()`
+    - For `BPF_SOCK_OPS_PARSE_HDR_OPT_CB`, load `struct tcp_int_opt` from TCP Option, parse it to construct `struct msg_context`, and store it with `struct flow_tuple` as key in BPF map `flow_context_map`
