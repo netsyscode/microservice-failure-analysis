@@ -17,7 +17,7 @@ Additionally, a debug utility is included to print `trace_pipe` outputs via the 
 To build the loader capsule:
 
 1. Ensure the `SKEL` and `SKEL_DIR` variables are set, pointing to the eBPF program skeleton and its directory, respectively.
-2. `BUILD_DIR`: Specifies the directory where the compiled binaries will be placed. This allows for organized storage of build artifacts, separate from the source code. If not set, a default path within a build subdirectory under `./user` is used, based on the SKEL name. This variable can be customized to change the output directory of the build process.
+2. `BUILD_DIR_NAME`: Specifies the directory where the compiled binaries will be placed. This allows for organized storage of build artifacts, separate from the source code. If not set, a default path within a build subdirectory under `./user` is used, based on the SKEL name. This variable can be customized to change the output directory of the build process.
 3. Run `make` to compile the loader and debug utility. The `DEBUG` flag can be set to 1 to enable debug support.
 
 Example:
@@ -25,8 +25,8 @@ Example:
 ```bash
 make SKEL=my_ebpf_program SKEL_DIR=/path/to/skel DEBUG=1
 
-# Or you can specify BUILD_DIR
-make SKEL=my_ebpf_program SKEL_DIR=/path/to/skel BUILD_DIR=/custom/build/directory DEBUG=1
+# Or you can specify BUILD_DIR_NAME
+make SKEL=my_ebpf_program SKEL_DIR=/path/to/skel BUILD_DIR_NAME=/custom/build/directory DEBUG=1
 ```
 
 ## Usage
@@ -48,7 +48,7 @@ To remove the built binaries and clean up the build directory, run:
 make SKEL=my_ebpf_program SKEL_DIR=/path/to/skel clean
 
 # Or
-make SKEL=my_ebpf_program SKEL_DIR=/path/to/skel BUILD_DIR=/custom/build/directory clean
+make SKEL=my_ebpf_program SKEL_DIR=/path/to/skel BUILD_DIR_NAME=/custom/build/directory clean
 ```
 
 ## Note

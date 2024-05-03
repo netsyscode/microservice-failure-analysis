@@ -59,16 +59,16 @@ check_dir_name:
 ifeq ($(BUILD_DIR_NAME),)
 	@echo "BUILD_DIR_NAME is empty! Building under template/build/ directory"
 else
-	@echo "building eBPF kernel process into" $(realpath $(BUILD_DIR_NAME))
+	@echo "BUILD_DIR_NAME is set to" $(realpath $(BUILD_DIR_NAME))
 endif
 
 BUILD_DIR_NAME ?= ../../build/$(CURRENT_DIR_NAME)/
 
 $(objects): %: %.c
 	@mkdir -p "$(BUILD_DIR_NAME)"
-	$(CLANG_CMD) $^ -c -g -o - | $(OPT_CMD) | $(LLVM_DIS) | $(LLC_CMD) -O2 -o "$(BUILD_DIR_NAME)"/$@.o
-	$(OBJDUMP) --source --debug-vars --line-numbers --symbol-description "$(BUILD_DIR_NAME)"/$@.o > "$(BUILD_DIR_NAME)"/$@.objdump
-	$(BPFTOOL) gen skeleton "$(BUILD_DIR_NAME)"/$@.o > "$(BUILD_DIR_NAME)"/$@.skel.h
+	@$(CLANG_CMD) $^ -c -g -o - | $(OPT_CMD) | $(LLVM_DIS) | $(LLC_CMD) -O2 -o "$(BUILD_DIR_NAME)"/$@.o
+	@$(OBJDUMP) --source --debug-vars --line-numbers --symbol-description "$(BUILD_DIR_NAME)"/$@.o > "$(BUILD_DIR_NAME)"/$@.objdump
+	@$(BPFTOOL) gen skeleton "$(BUILD_DIR_NAME)"/$@.o > "$(BUILD_DIR_NAME)"/$@.skel.h
 
 clean: 
 	-$(RM) -r "$(BUILD_DIR_NAME)"

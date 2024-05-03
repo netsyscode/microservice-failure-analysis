@@ -1,3 +1,6 @@
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
+SRC_DIR := $(realpath $(dir $(THIS_MAKEFILE)))
+
 CLANG := clang
 BPFSO := -lbpf
 ELFSO := -lelf
@@ -12,10 +15,10 @@ CFLAGS += -DDEBUG
 endif
 
 TARGET = loader-capsule
-SRCS = loader.c debug.c
-DEPS = loader.c debug.c debug.h capsule_util.h $(SKEL_DIR)/$(SKEL).skel.h
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+DEPS = $(wildcard $(SRC_DIR)/*.c $(SRC_DIR)/*.h Makefile) $(SKEL_DIR)/$(SKEL).skel.h
 
-BUILD_DIR ?= ../build/$(SKEL)
+BUILD_DIR_NAME ?= ../build/$(SKEL)
 
 .PHONY: all check-params clean
 
@@ -32,8 +35,9 @@ endif
 	@echo "SKEL_DIR set to" $(SKEL_DIR)
 
 $(TARGET): $(DEPS) check-params
-	@mkdir -p "$(BUILD_DIR)"
-	$(CLANG) $(LDFLAGS) $(SRCS) -o "$(BUILD_DIR)/$(TARGET)" $(CFLAGS) $(LIBS)
+	@echo $(MAKEFILE_LIST)
+	@mkdir -p "$(BUILD_DIR_NAME)"
+	$(CLANG) $(LDFLAGS) $(SRCS) -o "$(BUILD_DIR_NAME)/$(TARGET)" $(CFLAGS) $(LIBS)
 
 clean:
-	-$(RM) -r "$(BUILD_DIR)"
+	-$(RM) -r "$(BUILD_DIR_NAME)"
