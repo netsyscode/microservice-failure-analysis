@@ -1,10 +1,18 @@
 # Gearbox Context Propagation Workflow
 
+This document provides a comprehensive guide to the processes and mechanisms employed by Gearbox to ensure seamless context propagation across network transactions. 
+
 ## Overview
+
+Gearbox utilizes advanced monitoring and tracing techniques to maintain and manage the state of network communications efficiently, leveraging eBPF technology to intercept and manipulate network packets at the kernel level. 
 
 ![Overview](./pic/overview.png)
 
+Please follow through the workflow sections below to grasp how each part of the process integrates.
+
 ## Workflow
+
+The workflow described herein details step-by-step how Gearbox parses TCP options, handles system calls, and propagates context through various network components to achieve precise and reliable data tracking. The included diagram (see below) illustrates the overall workflow, aiding in the visual understanding of the context propagation mechanisms.
 
 ### Step 1: Parsing TCP Options
 
