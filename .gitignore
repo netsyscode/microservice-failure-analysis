@@ -1,5 +1,6 @@
 ./scripts/sync/
-.DS_Store
+
+**/.DS_Store
 
 **/build/
 
