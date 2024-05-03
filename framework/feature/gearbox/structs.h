@@ -1,4 +1,3 @@
-
 #ifndef __GEARBOX_STRUCTS_H__
 #define __GEARBOX_STRUCTS_H__
 

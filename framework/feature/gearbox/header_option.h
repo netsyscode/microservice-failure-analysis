@@ -2,6 +2,8 @@
 #define __GEARBOX_HEADER_OPTION_H__
 
 #include "utils.h"
+#include "structs.h"
+#include "maps.h"
 
 #define TCP_FLAG_PSH  0x08
 #define TCP_FLAG_ACK  0x10

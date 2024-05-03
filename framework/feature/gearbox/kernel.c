@@ -1,7 +1,7 @@
 #include "all.h"
 #include "utils.h"
 #include "structs.h"
-#include "map.h"
+#include "maps.h"
 #include "header_option.h"
 #include "collection.h"
 

@@ -1,5 +1,5 @@
-#ifndef __GEARBOX_MAP_H__
-#define __GEARBOX_MAP_H__
+#ifndef __GEARBOX_MAPS_H__
+#define __GEARBOX_MAPS_H__
 
 #include "all.h"
 #include "structs.h"
@@ -61,8 +61,8 @@ struct {
 // Filter the trigger of system call hooks by pid generated at user space
 struct {
     __uint(type, BPF_MAP_TYPE_HASH);
-    __type(key, __u32);
-    __type(value, __u32);
+    __type(key, u32);
+    __type(value, u32);
     __uint(max_entries, 100);
 } pid_map SEC(".maps");
 
@@ -91,9 +91,9 @@ struct {
 
 struct {
     __uint(type, BPF_MAP_TYPE_HASH);
-    __type(key, __u32);
-    __type(value, __u64);
+    __type(key, u32);
+    __type(value, u64);
     __uint(max_entries, 1);
 } now_trace_id_map SEC(".maps");
 
-#endif // __GEARBOX_MAP_H__
+#endif // __GEARBOX_MAPS_H__
