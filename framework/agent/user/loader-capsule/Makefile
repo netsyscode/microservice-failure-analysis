@@ -7,7 +7,7 @@ ELFSO := -lelf
 
 LIBS = $(BPFSO) $(ELFSO)
 LDFLAGS = -Wl,-rpath,/usr/lib64
-CFLAGS = -I"$(SKEL_DIR)" -DBPF_KERNEL_SKELETON=$(SKEL)
+CFLAGS = -I"$(SKEL_DIR)" -I"$(SRC_DIR)" -DBPF_KERNEL_SKELETON=$(SKEL)
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
@@ -31,13 +31,11 @@ endif
 ifndef SKEL_DIR
 	$(error SKEL_DIR is not set)
 endif
-	@echo "SKEL set to" $(SKEL)
-	@echo "SKEL_DIR set to" $(SKEL_DIR)
+	@echo "SKEL set to" $(SKEL) ", SKEL_DIR set to" $(SKEL_DIR)
 
 $(TARGET): $(DEPS) check-params
-	@echo $(MAKEFILE_LIST)
 	@mkdir -p "$(BUILD_DIR_NAME)"
-	$(CLANG) $(LDFLAGS) $(SRCS) -o "$(BUILD_DIR_NAME)/$(TARGET)" $(CFLAGS) $(LIBS)
+	@$(CLANG) $(LDFLAGS) $(SRCS) -o "$(BUILD_DIR_NAME)/$(TARGET)" $(CFLAGS) $(LIBS)
 
 clean:
 	-$(RM) -r "$(BUILD_DIR_NAME)"

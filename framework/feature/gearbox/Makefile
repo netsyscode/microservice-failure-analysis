@@ -29,7 +29,7 @@ loader: $(LOADER_SRC) setup_dirs
 	@echo ">>>>>>>> Building Gearbox eBPF loader program at $(realpath $(RELATIVE_BUILD_DIR_NAME))/$@/"
 	@echo
 
-	$(MAKE) -C ./loader \
+	@$(MAKE) -C ./loader \
 		BPF_INFRA_PATH=$(BPF_INFRA_PATH) \
 		BUILD_DIR_NAME=$(realpath $(RELATIVE_BUILD_DIR_NAME))/$@/ \
 		SKEL=kernel \

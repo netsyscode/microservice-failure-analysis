@@ -1,5 +1,5 @@
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef __CAPSULE_DEBUG_H__
+#define __CAPSULE_DEBUG_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,4 +12,4 @@
 void read_trace_pipe();
 void int_signal_handler(int signo);
 
-#endif
+#endif // __CAPSULE_DEBUG_H__

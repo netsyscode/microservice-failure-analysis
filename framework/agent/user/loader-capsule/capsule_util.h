@@ -1,5 +1,5 @@
-#ifndef CAPSULE_UTIL_H
-#define CAPSULE_UTIL_H
+#ifndef __CAPSULE_UTIL_H__
+#define __CAPSULE_UTIL_H__
 
 #define STRINGIZE(x)                #x
 #define STRINGIZE_AFTER_EXPAND(x)   STRINGIZE(x)
@@ -23,4 +23,4 @@
 #define BASE_FOLDER                 "/sys/fs/bpf"
 #define PIN_FOLDER                  BASE_FOLDER "/" STRINGIZE_AFTER_EXPAND(EXPAND_MACRO(BPF_KERNEL_SKELETON))
 
-#endif
+#endif // __CAPSULE_UTIL_H__
