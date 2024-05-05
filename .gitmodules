@@ -7,3 +7,6 @@
 [submodule "deps/jaeger/jaeger-idl"]
 	path = deps/jaeger/jaeger-idl
 	url = git@github.com:jaegertracing/jaeger-idl.git
+[submodule "deps/cjson/cJSON"]
+	path = deps/cjson/cJSON
+	url = git@github.com:DaveGamble/cJSON.git
