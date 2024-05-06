@@ -1,1 +1,1 @@
-include ../../../agent/user/loader-capsule/Makefile
+include $(BPF_INFRA_PATH)/user/loader-capsule/Makefile
