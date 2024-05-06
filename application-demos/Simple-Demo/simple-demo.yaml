@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+spec:
+  selector:
+    app: service1
+  ports:
+    - protocol: TCP
+      port: 4567
+      targetPort: 4567
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service1-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service1
+  template:
+    metadata:
+      labels:
+        app: service1
+    spec:
+      containers:
+      - name: service1
+        image: datawine/simple-demo:latest
+        ports:
+        - containerPort: 4567
+        env:
+        - name: PORT
+          value: "4567"
+        - name: NEXT_SERVICE_URL
+          value: "http://service2:5678/"
+        - name: SERVICE_NAME
+          value: "service1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service2
+spec:
+  selector:
+    app: service2
+  ports:
+    - protocol: TCP
+      port: 5678
+      targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service2-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service2
+  template:
+    metadata:
+      labels:
+        app: service2
+    spec:
+      containers:
+      - name: service2
+        image: datawine/simple-demo:latest
+        ports:
+        - containerPort: 5678
+        env:
+        - name: PORT
+          value: "5678"
+        - name: NEXT_SERVICE_URL
+          value: "http://service3:6789/"
+        - name: SERVICE_NAME
+          value: "service2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service3
+spec:
+  selector:
+    app: service3
+  ports:
+    - protocol: TCP
+      port: 6789
+      targetPort: 6789
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service3-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service3
+  template:
+    metadata:
+      labels:
+        app: service3
+    spec:
+      containers:
+      - name: service3
+        image: datawine/simple-demo:latest
+        ports:
+        - containerPort: 6789
+        env:
+        - name: PORT
+          value: "6789"
+        - name: NEXT_SERVICE_URL
+          value: "none"
+        - name: SERVICE_NAME
+          value: "service3"
