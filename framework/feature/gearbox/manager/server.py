@@ -1,177 +1,130 @@
-import socket
-import threading
-import time
 from queue import Queue
-from ctypes import *
-from path import *
-import sys
-import numpy as np
+
+from util import *
+from structs import Edge, Point, Path
+from config import *
 
 
-lock = threading.Lock()
+def client_handler(client_socket, client_address, output_queue):
+    """Handle the connection from a client, receiving data and processing it."""
+    print(f"New connection from {client_address}")
 
-edge_list = Queue(2000*(sizeof(Edge)+16))
-agent_port = 50011
-storage_address = "10.0.1.40"
-storage_port = 50020
-path_server_ip = "10.0.1.40" #path_server 的ip地址
+    try:
+        while True:
+            # Receive data from the client
+            data = client_socket.recv(sizeof(Edge))
+            if not data:
+                continue
 
-transfer_size = 0
-edge_num = 0
-path_num = 0
-path_set = set()
+            # Check for quit command
+            if data == b"QUIT":
+                break
 
-path_time = {}
-time_list = []
-pathnum_dic = {}
-for x in range(1, 12):
-    pathnum_dic[x] = 0
+            # Decode data to Edge object
+            edge = Edge()
+            edge.decode(data)
 
-def handle_client(client_socket,client_address):
-    fp = open("egde.txt", 'a+')
-    # 处理客户端连接请求
-    global edge_list
-    global edge_num
-    global transfer_size
-    global path_num
-    global pathnum_dic
-    print('new connection from %s:%s' % client_address)
-    while True:
+            # Attempt to store the received edge in the edge list
+            try:
+                output_queue.put((edge, client_address))
+            except queue.Full:
+                print("Edge list is full, unable to add more edges.")
 
-        data = client_socket.recv(sizeof(Edge))
-        if not data:
-            continue
-        transfer_size += len(data)
-        edge = Edge()
-        edge.decode(data)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Ensure the client socket is closed after operations
+        client_socket.close()
+        print(f"Connection closed for {client_address}")
 
-        #print(edge.num)
-        # fp.write(f"{edge.traceID} {edge.componentID1} {edge.invokeID1} {edge.componentID2} {edge.invokeID2}\n")
-      
+def process_edge(edge, client_address, point_dic, path_dic):
+    """Add edge to point dictionary and path dictionary."""
+    trace_id = edge.trace_id
+
+    if trace_id not in point_dic:
+        point_dic[trace_id] = []
+    point_dic[trace_id].extend([
+        (edge.component_id_1, edge.invoke_id_1, client_address),
+        (edge.component_id_2, edge.invoke_id_2, client_address)
+    ])
+
+    if trace_id not in path_dic:
+        path_dic[trace_id] = Path()
+    path_dic[trace_id].addEdge(edge)
+
+def check_and_process_complete_paths(point_dic, path_dic):
+    """Check if paths are complete and process them if they are, then remove them."""
+    completed_trace_ids = []  # List to store trace IDs of completed paths
+
+    # Check and process each path, record trace IDs of completed paths
+    for trace_id, path in path_dic.items():
+        if path.complete():
+            process_complete_path(trace_id, path_dic, point_dic)
+            completed_trace_ids.append(trace_id)
+
+    # Remove processed paths from the dictionary using exception handling
+    for trace_id in completed_trace_ids:
         try:
-            edge_list.put((edge,client_address))
-        except:
-            print("full")
+            del path_dic[trace_id]
+        except KeyError:
+            print(f"Failed to delete path with trace ID {trace_id}: Not found in path_dic")
 
-        edge_num += 1
-        if edge_num % 10 == 0:
-            pass
-            # print(f"edge num: {edge_num} path_num: {path_num}")
-        if data=="QUIT":
-            break
-        #client_socket.send("ACKED".encode("utf-8"))
-    time.sleep(1)
-    client_socket.close()
+def process_complete_path(trace_id, path_dic, point_dic):
+    """Handle complete paths by aggregating data and sending it to aggregation and storage."""
+    try:
+        path = path_dic[trace_id]
+        point_list = point_dic.pop(trace_id)
+    except KeyError as e:
+        print(f"Key error encountered: {e}")
+        return
 
+    path_id = path.calc_path_id()  # Returns a unique ID for a path
 
-# all for send pathID back
-def send_msg(udp_socket,data,server_address):
-    global transfer_size
-    has_send = False
-    while not has_send:
-        
-        udp_socket.sendto(data, server_address)
-        transfer_size += len(data)
-        # print(f"transfer_size: {transfer_size}")
-        
-        try:
-            data, server_address = udp_socket.recvfrom(1024)
-        except:
+    for component_id, invoke_id, aggr_address in point_list:
+        if component_id == 0:
             continue
-        #print(data)
-        has_send = True
 
-def send_back(point,address,pathID):
-    server_address = (address, agent_port)
-
-    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_socket.settimeout(2)
+        point = Point(trace_id, component_id, invoke_id)
+        send_pathid_to_aggregation(point, path_id, aggr_address, AGGREGATION_PORT)
     
-    send_msg(udp_socket,point.encode(),server_address)
-    send_msg(udp_socket,pathID.to_bytes(32, 'little'),server_address)
-    udp_socket.close()
+    send_pathid_to_storage(path_id, STORAGE_ADDR, STORAGE_PORT)
 
-def send_pathID(pathID):
-    server_address = (storage_address, storage_port)
-
-    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_socket.settimeout(2)
-    # print("PID:",pathID)
-    send_msg(udp_socket,pathID.to_bytes(32, 'little'),server_address)
-    udp_socket.close()
-
-    
-def edge_consumer():
-    global edge_list
-    path_dic = {}
-    # {traceid: [(componentID,invokeID,address)]}, for send back
-    point_dic = {}
-    global path_num
-    global transfer_size
-    fp = open(f"../../evaluation/tprof/data/path10-0.5ms.txt", 'w')
+def edge_consumer(input_queue, point_dic, path_dic):
+    """Process edges from an input queue and manage paths and points dictionaries."""
     while True:
         try:
-            (edge,client_address) = edge_list.get(block=False)
-        except:
-            time.sleep(1)
-        else:
-            if edge.traceID not in point_dic:
-                point_dic[edge.traceID] = []
-            point_dic[edge.traceID].append((edge.componentID1,edge.invokeID1,client_address))
-            point_dic[edge.traceID].append((edge.componentID2,edge.invokeID2,client_address))
-            if edge.traceID not in path_dic:
-                path_dic[edge.traceID] = Path(mode = 1)
-            path_dic[edge.traceID].addEdge(edge)
+            edge, client_address = input_queue.get(block=False)
+        except Empty:
+            time.sleep(1)  # Sleep when queue is empty
+            continue
 
-            path_dic_copy = path_dic.copy()
-            for traceid in path_dic_copy:
-                if path_dic_copy[traceid].complete():
-                    path_id = getPathID(path_dic[traceid].__str__())
-                    if path_id not in path_set:
-                        if path_dic[traceid].mode == 1:
-                            fp.write(f"pathid: {path_id} edges: {path_dic[traceid].Graph.edges()}\n")
-                    del path_dic[traceid]
-                    path_set.add(path_id)
-                    with lock:
-                        path_num += 1
-                        # if path_num // 1000 > 0 and pathnum_dic[ path_num // 1000 ] != 1:
-                        if path_num // 500 > 0:
-                            print(f"pathnum: {path_num} transfer_size: {transfer_size}")
-                            # pathnum_dic[ path_num // 500 ] += 1
-                            path_num = 0
+        process_edge(edge, client_address, point_dic, path_dic)
+        check_and_process_complete_paths(point_dic, path_dic)
 
-                    point_list = point_dic.pop(traceid)
-                    for (componentID,invokeID,address) in point_list:
-                        if componentID == 0:
-                            continue
-                        point = Point()
-                        point.traceID = traceid
-                        point.componentID = componentID
-                        point.invokeID = invokeID
-                        # print(point,address[0],path_id)
-                        send_back(point,address[0],path_id)
-                    send_pathID(path_id)
-            path_dic_copy.clear()
+def main():
+    """Main function to setup and start the path assembly server (gearbox manager)."""
+    # Buffers for storing points and paths
+    point_buffer = {}
+    path_buffer = {}
 
+    # Parse command line arguments
+    args = parse_args()
 
-def open_server(host,port):
-    # 创建TCP套接字
+    # Queue for incoming edges with a calculated size based on Edge structure and client address space
+    edge_queue = Queue(QUEUE_ELEM_CNT * (sizeof(Edge) + CLIENT_ADDR_SPACE))
+
+    # Start the server with the specified settings and handlers
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # 绑定到本地端口
     server_socket.bind((host, port))
-    # 监听连接请求
     server_socket.listen(5)
 
-    server_thread = threading.Thread(target=edge_consumer,args=())
+    server_thread = threading.Thread(target=edge_consumer, args=(edge_queue, point_buffer, path_buffer))
     server_thread.start()
 
     while True:
-        # 等待客户端连接
         client_socket, client_address = server_socket.accept()
-        # 开启新的线程处理该连接
-        client_thread = threading.Thread(target=handle_client, args=(client_socket,client_address))
+        client_thread = threading.Thread(target=client_func, args=(client_socket, client_address, edge_queue))
         client_thread.start()
-            
-        
-if __name__ == '__main__':
-    open_server(path_server_ip, int(sys.argv[1]))
+
+if __name__ == "__main__":
+    main()
