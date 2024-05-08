@@ -12,8 +12,9 @@ TRIGGER_THRESHOLD = 5000
 OUTPUT_FILE = "./result.json"
 
 class Collector:
-    def __init__(self, config: Config, output_path=OUTPUT_FILE, threshold=TRIGGER_THRESHOLD):
+    def __init__(self, config: Config, idx, output_path=OUTPUT_FILE, threshold=TRIGGER_THRESHOLD):
         self.config = config
+        self.idx = idx
         self.threshold = threshold
         self.path_num = 0
         self.pathid_set = {}
@@ -25,7 +26,7 @@ class Collector:
         threading.Thread(target=self.process).start()
 
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-            udp_socket.bind((self.config.collectors[0].ip, self.config.collectors[0].manager_port))
+            udp_socket.bind((self.config.collectors[self.idx].ip, self.config.collectors[self.idx].manager_port))
 
             while True:
                 data, manager_address = udp_socket.recvfrom(1024)
@@ -86,8 +87,8 @@ class Collector:
         return aggregated_data
 
 def main():
-    gearbox_config = parse_args()
-    collector = Collector(gearbox_config)
+    gearbox_config, idx = parse_args()
+    collector = Collector(gearbox_config, idx)
     collector.start_server()
 
 if __name__ == '__main__':

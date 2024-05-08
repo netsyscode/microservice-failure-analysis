@@ -13,8 +13,9 @@ QUEUE_ELEM_CNT = 2000
 CLIENT_ADDR_SPACE = 16
 
 class Manager:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, idx):
         self.config = config
+        self.idx = idx
         self.edge_queue = Queue(QUEUE_ELEM_CNT * (sizeof(Edge) + CLIENT_ADDR_SPACE))
         self.point_dic = {}
         self.path_dic = {}
@@ -23,7 +24,7 @@ class Manager:
         """Bind the server socket, listen and start the server."""
         # Initialize server socket
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-            server_socket.bind((self.config.managers[0].ip, self.config.managers[0].loader_port))
+            server_socket.bind((self.config.managers[self.idx].ip, self.config.managers[self.idx].loader_port))
             server_socket.listen(5)
             print(f"Server listening on {self.config.managers[0].ip}:{self.config.managers[0].loader_port}")
 
@@ -161,8 +162,8 @@ class Manager:
             send_udp_msg(udp_socket, path_id_encoded, storage_server)
 
 def main():
-    gearbox_config = parse_args()
-    manager = Manager(gearbox_config)
+    gearbox_config, idx = parse_args()
+    manager = Manager(gearbox_config, idx)
     manager.start_server()
 
 if __name__ == "__main__":

@@ -128,10 +128,11 @@ def retrieve_aggregated_metric(metric):
 def parse_args():
     parser = argparse.ArgumentParser(description='Gearbox manager server.')
     parser.add_argument('-f', type=str, required=True, help='Config file of gearbox.')
+    parser.add_argument('-i', type=int, required=True, help='Index of this aggregator/manager/collector.')
 
     args = parser.parse_args()
     gearbox_config = parse_config(args.f)
-    return gearbox_config
+    return gearbox_config, args.i
 
 def send_udp_msg(udp_socket, data, server_address, retries=10):
     """Sends data over UDP with retries on failure."""

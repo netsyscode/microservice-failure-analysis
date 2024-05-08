@@ -15,8 +15,9 @@ PATH_ID_SZ = 4
 SIGNAL_PROCESS_DONE_SZ = 4
 
 class Aggregator:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, idx):
         self.config = config
+        self.idx = idx
         self.point_metric_buffer = Queue(QUEUE_ELEM_CNT * (sizeof(Point) + sizeof(Metric)))
         self.pathid_point_buffer = Queue(QUEUE_ELEM_CNT * (PATH_ID_SZ + sizeof(Point)))
         self.query_list = Queue(QUEUE_ELEM_CNT * PATH_ID_SZ)
@@ -31,7 +32,7 @@ class Aggregator:
 
     def start_loader_comm(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
-            tcp_socket.bind((self.config.aggregators[0].ip, self.config.aggregators[0].loader_port))
+            tcp_socket.bind((self.config.aggregators[self.idx].ip, self.config.aggregators[self.idx].loader_port))
             tcp_socket.listen(5)
 
             while True:
@@ -67,7 +68,7 @@ class Aggregator:
 
     def start_manager_comm(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-            udp_socket.bind((self.config.aggregators[0].ip, self.config.aggregators[0].manager_port))
+            udp_socket.bind((self.config.aggregators[self.idx].ip, self.config.aggregators[self.idx].manager_port))
 
             while True:
                 # Receive point from manager
@@ -86,7 +87,7 @@ class Aggregator:
 
     def start_collector_comm(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-            udp_socket.bind((self.config.aggregators[0].ip, self.config.aggregators[0].collector_port))
+            udp_socket.bind((self.config.aggregators[self.idx].ip, self.config.aggregators[self.idx].collector_port))
 
             while True:
                 data, collector_address = udp_socket.recvfrom(1024)
@@ -176,8 +177,8 @@ class Aggregator:
                 continue
 
 def main():
-    gearbox_config = parse_args()
-    aggregator = Aggregator(gearbox_config)
+    gearbox_config, idx = parse_args()
+    aggregator = Aggregator(gearbox_config, idx)
     aggregator.start_server()
 
 if __name__ == '__main__':

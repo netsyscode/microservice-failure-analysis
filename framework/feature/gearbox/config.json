@@ -22,16 +22,13 @@
     "managers": [
         {
             "ip": "10.10.10.8", 
-            "loader_port": 18083,
-            "aggregator_port": 18084,
-            "collector_port": 18085
+            "loader_port": 18083
         }
     ],
     "collectors": [
         {
             "ip": "10.10.10.8", 
-            "aggregator_port": 18086,
-            "manager_port": 18087
+            "manager_port": 18084
         }
     ]
 }
