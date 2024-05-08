@@ -5,6 +5,18 @@
             "loader_port": 18080,
             "manager_port": 18081,
             "collector_port": 18082
+        },
+        {
+            "ip": "10.10.10.9",
+            "loader_port": 18080,
+            "manager_port": 18081,
+            "collector_port": 18082
+        },
+        {
+            "ip": "10.10.10.10",
+            "loader_port": 18080,
+            "manager_port": 18081,
+            "collector_port": 18082
         }
     ],
     "managers": [

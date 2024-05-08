@@ -1,35 +1,36 @@
 import socket
 import threading
 import time
-from ctypes import *
 
-from util import parse_args, save_data
+from ctypes import sizeof
+
+from config import Config
 from structs import AggrPoint, AggrMetric
+from util import parse_args, save_data
 
 TRIGGER_THRESHOLD = 5000
+OUTPUT_FILE = "./result.json"
 
 class Collector:
-    def __init__(self, host, port, aggr_server_list, output_path="./result.json", threshold=TRIGGER_THRESHOLD):
-        self.host = host
-        self.port = port
+    def __init__(self, config: Config, output_path=OUTPUT_FILE, threshold=TRIGGER_THRESHOLD):
+        self.config = config
         self.threshold = threshold
         self.path_num = 0
         self.pathid_set = {}
         self.path_threshold_event = threading.Event()
         self.lock = threading.Lock()
-        self.aggr_server_list = aggr_server_list
         self.output = output_path
 
     def start_server(self):
         threading.Thread(target=self.process).start()
 
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
-            udp_socket.bind((self.host, self.port))
+            udp_socket.bind((self.config.collectors[0].ip, self.config.collectors[0].manager_port))
 
             while True:
-                data, client_address = udp_socket.recvfrom(1024)
+                data, manager_address = udp_socket.recvfrom(1024)
                 path_id = int.from_bytes(data, 'little')
-                udp_socket.sendto(b'ACKED', client_address)
+                udp_socket.sendto(b'ACKED', manager_address)
 
                 with self.lock:
                     self.pathid_set[path_id] += 1
@@ -57,8 +58,8 @@ class Collector:
     def collect_aggr_data(self, path_id):
         """Aggregate data from multiple servers for a given path_id."""
         aggregated_data = []
-        for address, port in self.aggr_server_list:
-            aggregated_data.extend(self.request_aggr_data(address, port, path_id))
+        for aggregator in self.config.aggregators:
+            aggregated_data.extend(self.request_aggr_data(aggregator.ip, aggregator.collector_port, path_id))
         return aggregated_data
 
     def request_aggr_data(self, address, port, path_id):
@@ -85,8 +86,8 @@ class Collector:
         return aggregated_data
 
 def main():
-    args = parse_args()
-    collector = Collector(args.host, args.port)
+    gearbox_config = parse_args()
+    collector = Collector(gearbox_config)
     collector.start_server()
 
 if __name__ == '__main__':

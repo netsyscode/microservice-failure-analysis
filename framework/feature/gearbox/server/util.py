@@ -1,5 +1,7 @@
 import socket
 import argparse
+import json
+
 from math import floor, ceil
 
 from structs import AggrMetric
@@ -143,3 +145,8 @@ def send_udp_msg(udp_socket, data, server_address, retries=10):
             continue  # Retry if timed out
     raise ConnectionError("Failed to send data after several retries.")
 
+def save_data(data, path):
+    """Append data to a JSON file."""
+    with open(path, 'a') as file:
+        json.dump(data, file)
+        file.write('\n')
