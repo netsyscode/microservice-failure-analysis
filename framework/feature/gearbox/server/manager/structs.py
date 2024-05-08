@@ -1,6 +1,5 @@
 from ctypes import *
 import networkx as nx
-import time
 
 class Point(LittleEndianStructure):
     _pack_ = 1

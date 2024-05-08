@@ -1,7 +1,7 @@
 import socket
 import argparse
 
-def parse_arg():
+def parse_args():
     parser = argparse.ArgumentParser(description='Gearbox manager server.')
     parser.add_argument('--host', type=str, required=True, help='Host IP address of this gearbox manager')
     parser.add_argument('--port', type=int, required=True, help='Host oort number of this gearbox manager')

@@ -6,6 +6,6 @@
 
 .vscode/
 
-**/__py__cache__/
+**/__pycache__/
 
 ./deps/bpftools/bpftools/

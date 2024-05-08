@@ -3,7 +3,7 @@ import threading
 import time
 from ctypes import *
 
-from util import parse_arg, save_data
+from util import parse_args, save_data
 from structs import AggrPoint, AggrMetric
 
 TRIGGER_THRESHOLD = 5000
@@ -85,7 +85,7 @@ class Collector:
         return aggregated_data
 
 def main():
-    args = parse_arg()
+    args = parse_args()
     collector = Collector(args.host, args.port)
     collector.start_server()
 

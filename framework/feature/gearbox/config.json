@@ -1,8 +1,25 @@
 {
+    "aggregators": [
+        {
+            "ip": "10.10.10.8",
+            "loader_port": 18080,
+            "manager_port": 18081,
+            "collector_port": 18082
+        }
+    ],
     "managers": [
-        {"ip": "10.10.10.8", "port": 18080}
+        {
+            "ip": "10.10.10.8", 
+            "loader_port": 18083,
+            "aggregator_port": 18084,
+            "collector_port": 18085
+        }
     ],
     "collectors": [
-        {"ip": "10.10.10.8", "port": 19090}
+        {
+            "ip": "10.10.10.8", 
+            "aggregator_port": 18086,
+            "manager_port": 18087
+        }
     ]
 }
