@@ -1,6 +1,7 @@
 #ifndef __GEARBOX_HEADER_OPTION_H__
 #define __GEARBOX_HEADER_OPTION_H__
 
+#include "all.h"
 #include "utils.h"
 #include "structs.h"
 #include "maps.h"
@@ -78,9 +79,11 @@ static inline void tcp_int_add_tcpopt(struct bpf_sock_ops *skops) {
         .dip = bpf_ntohl(skops->remote_ip4),
     };
 
-    struct msg_context *_context = bpf_map_lookup_elem(&flow_context_map, &f_tuple);
+    struct msg_context *_context;
+    _context = bpf_map_lookup_elem(&flow_context_map, &f_tuple);
     if (!_context) {
         bpf_printk("tcp_int_add_tcpopt() error: Failed to get msg_context from flow_context_map\n");
+        return;
     }
 
     struct tcp_int_opt iopt = {0};
