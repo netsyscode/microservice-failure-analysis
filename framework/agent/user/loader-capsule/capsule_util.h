@@ -17,8 +17,8 @@
 #define BPF_LINKS_COUNT(links)      (sizeof(links) / BPF_LINK_PTR_SIZE)
 #define bpf_object__for_each_link(link, links) \
     for ((link) = (void *)&(links); \
-         (link) < (void *)&(links) + BPF_LINKS_COUNT(links); \
-         (link)++)
+         (link) < (void *)&(links) + BPF_LINKS_COUNT(links) * BPF_LINK_PTR_SIZE; \
+         (link) = (link + BPF_LINK_PTR_SIZE))
 
 #define BASE_FOLDER                 "/sys/fs/bpf"
 #define PIN_FOLDER                  BASE_FOLDER "/" STRINGIZE_AFTER_EXPAND(EXPAND_MACRO(BPF_KERNEL_SKELETON))

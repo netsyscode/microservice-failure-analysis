@@ -162,17 +162,21 @@ static int pin_stuff(struct BPF_KERNEL_SKELETON *skel) {
     // Here we use void * and casting because struct bpf_link is *declared* in /usr/include/bpf/libbpf.h
     // Its definition is in either vmlinux.h or libbpf
     // Hence, arithmetic on its pointer, which are an incomplete type, leads to complication error 
-    // counter = 0;
-    // void *link_ptr;  
-    // bpf_object__for_each_link(link_ptr, skel->links) {
-    //     memset(pin_path, 0, sizeof(pin_path));
-    //     sprintf(pin_path, "%s/link_%s", PIN_FOLDER, bpf_object__name((struct bpf_object *)(*(struct bpf_link **)link_ptr)));
-    //     printf("Pinning link %s\n", pin_path);
-    //     err = pin_link(*(struct bpf_link **)link_ptr, pin_path);
-    //     if (err) { 
-    //         return err; 
-    //     }
-    // }
+    counter = 0;
+    void *link_ptr;  
+    bpf_object__for_each_link(link_ptr, skel->links) {
+        counter ++;
+        memset(pin_path, 0, sizeof(pin_path));
+        sprintf(pin_path, "%s/link_%02d", PIN_FOLDER, counter);
+        printf("Pinning link %s with ptr %lx sz %lu of total size %lu, total count %lu\n", 
+            pin_path, (unsigned long)link_ptr, BPF_LINK_PTR_SIZE, 
+            sizeof(skel->links), BPF_LINKS_COUNT(skel->links));
+        err = pin_link(*(struct bpf_link **)link_ptr, pin_path);
+        if (err) { 
+            return err; 
+        }
+        printf("Link %s pinned\n", pin_path);
+    }
 
     return 0;
 }
@@ -195,12 +199,15 @@ int main() {
     }
     printf("Skeleton loaded\n");
 
+    // Here we don't attach bpf programs.
+    // Instead, we 
     err = SKEL_ATTACH(BPF_KERNEL_SKELETON)(skel);
     if (err) {
         fprintf(stderr, "%s\n", "Failed to attach skeleton");
         goto cleanup;
     }
     printf("Skeleton attached\n");
+    sleep(100);
 
 #ifdef DEBUG
     signal(SIGINT, int_signal_handler);

@@ -3,11 +3,10 @@
 **/.DS_Store
 
 **/build/
+**/output/
 
 .vscode/
 
 **/__pycache__/
 
 ./deps/bpftools/bpftools/
-
-**/bpf_status.txt
