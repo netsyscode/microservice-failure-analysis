@@ -9,3 +9,5 @@
 **/__pycache__/
 
 ./deps/bpftools/bpftools/
+
+**/bpf_status.txt

@@ -140,26 +140,6 @@ static int cleanup_pinfolder() {
     return rmtree(PIN_FOLDER);
 }
 
-static int pin_program(struct bpf_program *prog, const char* path) {
-    int err = 0;
-    err = bpf_program__pin(prog, path);
-    if (err) {
-        printf("Could not pin prog %s: %d\n", path, err);
-        perror("Error Reason:");
-    }
-    return err;
-}
-
-static int pin_map(struct bpf_map *map, const char* path) {
-    int err = 0;
-    err = bpf_map__pin(map, path);
-    if (err) {
-        printf("Could not pin map %s: %d\n", path, err);
-        perror("Error Reason:");
-    }
-    return err;
-}
-
 static int pin_link(struct bpf_link *link, const char* path) {
     int err = 0;
     err = bpf_link__pin(link, path);
@@ -172,49 +152,27 @@ static int pin_link(struct bpf_link *link, const char* path) {
 
 static int pin_stuff(struct BPF_KERNEL_SKELETON *skel) {
     int err = 0, counter;
-    char pin_path[100];
+    char *name, pin_path[1024];
 
-    // Pin Maps
-    counter = 0;
-    struct bpf_map *map;
-    bpf_object__for_each_map(map, skel->obj) {
-        sprintf(pin_path, "%s/map_%02d", PIN_FOLDER, counter++);
-        err = pin_map(map, pin_path);
-        if (err) {
-            return err; 
-        }
-    }
-
-    // Pin Programs
-    counter = 0;
-    struct bpf_program *prog;
-    bpf_object__for_each_program(prog, skel->obj) {
-        sprintf(pin_path, "%s/prog_%02d", PIN_FOLDER, counter++);
-        err = pin_program(prog, pin_path);
-        if (err) { 
-            return err; 
-        }
-    }
+    // Pin maps and programs
+    bpf_object__pin(skel->obj, PIN_FOLDER);
 
     // Pin Links
-    // Here requires explicit checks since there is no bpf_object__for_each_link
-    if (BPF_LINKS_COUNT(skel->links) != counter) {
-        printf("Number of links does not match number of programs\n");
-        return -1;
-    }
 
     // Here we use void * and casting because struct bpf_link is *declared* in /usr/include/bpf/libbpf.h
     // Its definition is in either vmlinux.h or libbpf
     // Hence, arithmetic on its pointer, which are an incomplete type, leads to complication error 
-    counter = 0;
-    void *link_ptr;  
-    bpf_object__for_each_link(link_ptr, skel->links) {
-        sprintf(pin_path, "%s/link_%02d", PIN_FOLDER, counter++);
-        err = pin_link(*(struct bpf_link **)link_ptr, pin_path);
-        if (err) { 
-            return err; 
-        }
-    }
+    // counter = 0;
+    // void *link_ptr;  
+    // bpf_object__for_each_link(link_ptr, skel->links) {
+    //     memset(pin_path, 0, sizeof(pin_path));
+    //     sprintf(pin_path, "%s/link_%s", PIN_FOLDER, bpf_object__name((struct bpf_object *)(*(struct bpf_link **)link_ptr)));
+    //     printf("Pinning link %s\n", pin_path);
+    //     err = pin_link(*(struct bpf_link **)link_ptr, pin_path);
+    //     if (err) { 
+    //         return err; 
+    //     }
+    // }
 
     return 0;
 }
@@ -228,18 +186,21 @@ int main() {
         fprintf(stderr, "%s\n", "Failed to open skeleton");
         return -1;
     }
+    printf("Skeleton opened\n");
 
     err = SKEL_LOAD(BPF_KERNEL_SKELETON)(skel);
     if (err) {
         fprintf(stderr, "%s\n", "Failed to load skeleton");
         goto cleanup;
     }
+    printf("Skeleton loaded\n");
 
     err = SKEL_ATTACH(BPF_KERNEL_SKELETON)(skel);
     if (err) {
         fprintf(stderr, "%s\n", "Failed to attach skeleton");
         goto cleanup;
     }
+    printf("Skeleton attached\n");
 
 #ifdef DEBUG
     signal(SIGINT, int_signal_handler);
@@ -265,6 +226,7 @@ int main() {
                 perror("Error Reason:");
                 goto cleanup;
             }
+            printf("Pin folder created\n");
             break;
         case DIR_EMPTY:
             break;
