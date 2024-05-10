@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <bpf/bpf.h>
 #include <bpf/libbpf.h>
+#include <errno.h>
 #include <ftw.h>
 
 #include "debug.h"
@@ -151,14 +152,57 @@ static int pin_link(struct bpf_link *link, const char* path) {
 }
 
 static int pin_stuff(struct BPF_KERNEL_SKELETON *skel) {
-    int err = 0, counter;
+    int i, err, counter;
     char *name, pin_path[1024];
 
     // Pin maps and programs
-    bpf_object__pin(skel->obj, PIN_FOLDER);
+    err = bpf_object__pin(skel->obj, PIN_FOLDER);
+    if (err) {
+        printf("Could not pin object to path %s: %d\n", PIN_FOLDER, err);
+        perror("Error Reason:");
+    }
+    printf("Object pinned\n");
 
-    // Pin Links
+    // Attach programs and pin links
+    for (i = 0; i < skel->skeleton->prog_cnt; i++) {
+		struct bpf_program *prog = *skel->skeleton->progs[i].prog;
+		struct bpf_link **link = skel->skeleton->progs[i].link;
 
+		if (!bpf_program__autoload(prog) || !bpf_program__autoattach(prog)) {
+            printf("Program %s not set for auto-load/auto-attach\n", bpf_program__name(prog));
+			continue;
+        }
+
+		// /* auto-attaching not supported for this program */
+		// if (!prog->sec_def || !prog->sec_def->prog_attach_fn) {
+        //     printf("Auto-attaching not supported for program %s\n", bpf_program__name(prog));
+		// 	continue;
+        // }
+
+        *link = bpf_program__attach(prog);
+        if (!(*link)) {
+			fprintf(stderr, "prog '%s': failed to auto-attach: %d\n", bpf_program__name(prog), errno);
+            if (errno == EOPNOTSUPP) {
+                printf("Auto-attaching not supported for program %s, continuing\n", bpf_program__name(prog));
+                continue;
+            } else {
+    			return errno;
+            }
+        }
+        printf("Program %s attached\n", bpf_program__name(prog));
+
+        memset(pin_path, 0, sizeof(pin_path));
+        sprintf(pin_path, "%s/link_%s", PIN_FOLDER, bpf_program__name(prog));
+        err = pin_link(*link, pin_path);
+        if (err) {
+            fprintf(stderr, "Failed to pin link %s\n", pin_path);
+            return err;
+        }
+        printf("Link %s pinned\n", pin_path);
+	}
+
+    /** This implementation is deprecated because some programs might not be auto-attached during attach time
+     * This will lead to a null ptr exception since links are created during attach time
     // Here we use void * and casting because struct bpf_link is *declared* in /usr/include/bpf/libbpf.h
     // Its definition is in either vmlinux.h or libbpf
     // Hence, arithmetic on its pointer, which are an incomplete type, leads to complication error 
@@ -168,15 +212,13 @@ static int pin_stuff(struct BPF_KERNEL_SKELETON *skel) {
         counter ++;
         memset(pin_path, 0, sizeof(pin_path));
         sprintf(pin_path, "%s/link_%02d", PIN_FOLDER, counter);
-        printf("Pinning link %s with ptr %lx sz %lu of total size %lu, total count %lu\n", 
-            pin_path, (unsigned long)link_ptr, BPF_LINK_PTR_SIZE, 
-            sizeof(skel->links), BPF_LINKS_COUNT(skel->links));
         err = pin_link(*(struct bpf_link **)link_ptr, pin_path);
         if (err) { 
             return err; 
         }
         printf("Link %s pinned\n", pin_path);
     }
+    */
 
     return 0;
 }
@@ -199,15 +241,16 @@ int main() {
     }
     printf("Skeleton loaded\n");
 
-    // Here we don't attach bpf programs.
-    // Instead, we 
+    /**
+     * Here we don't attach bpf programs.
+     * Instead, we attach it during pin time
     err = SKEL_ATTACH(BPF_KERNEL_SKELETON)(skel);
     if (err) {
         fprintf(stderr, "%s\n", "Failed to attach skeleton");
         goto cleanup;
     }
     printf("Skeleton attached\n");
-    sleep(100);
+    */ 
 
 #ifdef DEBUG
     signal(SIGINT, int_signal_handler);
