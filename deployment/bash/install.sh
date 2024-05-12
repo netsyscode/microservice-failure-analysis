@@ -23,4 +23,13 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Install the cjson library
+echo "Try to install cjson..."
+chmod +x ./install_cjson.sh && ./install_cjson.sh
+
+if [ $? -ne 0 ]; then
+  echo "An error occurred during the installation of cjson."
+  exit 1
+fi
+
 echo "Installation completed successfully."
