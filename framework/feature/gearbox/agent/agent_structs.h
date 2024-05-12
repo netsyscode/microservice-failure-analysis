@@ -10,15 +10,16 @@ typedef enum {
 } DebugLevel;
 
 typedef struct {
+    int num_aggregators;
+    char **aggregator_ips;
+    int *aggregator_ports;
+
     int num_managers;
     char **manager_ips;
-    int *manager_ports;
-    int *manager_fds;
+    int *manager_ports; 
 
-    int num_collectors;
-    char **collector_ips;
-    int *collector_ports;
-    int *collector_fds;
+    int *aggregator_fds;
+    int *manager_fds;
 } ConfigData;
 
 struct edge_for_path {

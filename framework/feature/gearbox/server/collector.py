@@ -27,6 +27,7 @@ class Collector:
 
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
             udp_socket.bind((self.config.collectors[self.idx].ip, self.config.collectors[self.idx].manager_port))
+            print(f"Collector {self.idx} started on {self.config.collectors[self.idx].ip}:{self.config.collectors[self.idx].manager_port}")
 
             while True:
                 data, manager_address = udp_socket.recvfrom(1024)

@@ -11,23 +11,20 @@ class AggregatorConfig:
         return f"AggregatorConfig(ip={self.ip}, loader_port={self.loader_port}, manager_port={self.manager_port}, collector_port={self.collector_port})"
 
 class ManagerConfig:
-    def __init__(self, ip, loader_port, aggregator_port, collector_port):
+    def __init__(self, ip, loader_port):
         self.ip = ip
         self.loader_port = loader_port
-        self.aggregator_port = aggregator_port
-        self.collector_port = collector_port
 
     def __str__(self):
-        return f"ManagerConfig(ip={self.ip}, loader_port={self.loader_port}, aggregator_port={self.aggregator_port}, collector_port={self.collector_port})"
+        return f"ManagerConfig(ip={self.ip}, loader_port={self.loader_port})"
 
 class CollectorConfig:
-    def __init__(self, ip, aggregator_port, manager_port):
+    def __init__(self, ip, manager_port):
         self.ip = ip
-        self.aggregator_port = aggregator_port
         self.manager_port = manager_port
 
     def __str__(self):
-        return f"CollectorConfig(ip={self.ip}, aggregator_port={self.aggregator_port}, manager_port={self.manager_port})"
+        return f"CollectorConfig(ip={self.ip}, manager_port={self.manager_port})"
 
 class Config:
     def __init__(self, aggregators, managers, collectors):

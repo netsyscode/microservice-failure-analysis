@@ -5,13 +5,12 @@
 #include "kernel_structs.h"
 
 #define RING_BUFFER_POLL_TIMEOUT    100         // ms
-#define RING_BUFFER_PATH            "/sys/fs/bpf/gearbox/map_06"
+#define RING_BUFFER_PATH            "/sys/fs/bpf/gearbox/rb"
 
-#define PID_CONFIG_PATH             "./pid.txt"
-#define PID_MAP_PATH                "/sys/fs/bpf/gearbox/map_05"
+#define PID_MAP_PATH                "/sys/fs/bpf/gearbox/pid_map"
 
-#define BPF_TCP_INT_PATH            "/sys/fs/bpf/gearbox/link_15"
-#define BPF_TCP_INT_NEW_PATH        "/sys/fs/bpf/gearbox/link_16"
+#define BPF_TCP_INT_PATH            "/sys/fs/bpf/gearbox/tcp_int"
+#define BPF_TCP_INT_NEW_PATH        "/sys/fs/bpf/gearbox/link_tcp_int"
 
 #define CGROUP_PATH                 "/sys/fs/cgroup/"
 

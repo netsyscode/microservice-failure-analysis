@@ -25,6 +25,7 @@ class Aggregator:
         self.aggr_buffer = Queue(QUEUE_ELEM_CNT * (sizeof(AggrPoint) + sizeof(AggrMetric)))
 
     def start_server(self):
+        print(f"Aggregator {self.idx} started on {self.config.aggregators[self.idx].ip}")
         threading.Thread(target=self.start_loader_comm).start()
         threading.Thread(target=self.start_manager_comm).start()
         threading.Thread(target=self.start_collector_comm).start()
@@ -38,19 +39,19 @@ class Aggregator:
             while True:
                 loader_socket, loader_address = tcp_socket.accept()
                 print(f"New connection from {loader_address}")
-                loader_thread = threading.Thread(target=self.handle_loader, args=(loader_socket))
+                loader_thread = threading.Thread(target=self.handle_loader, args=(loader_socket, ))
                 loader_thread.start()
     
     def handle_loader(self, loader_socket):
         while True:
             data = loader_socket.recv(sizeof(Point))
-            assert(data)
+            # assert(data)
 
             point = Point()
             point.decode(data)
 
             data = loader_socket.recv(sizeof(Metric))
-            assert(data)
+            # assert(data)
 
             metric = Metric()
             metric.decode(data)
@@ -91,7 +92,7 @@ class Aggregator:
 
             while True:
                 data, collector_address = udp_socket.recvfrom(1024)
-                assert(data)
+                # assert(data)
 
                 path_id = int.from_bytes(data,'little')
                 print(f"Received path_id: {path_id}")
