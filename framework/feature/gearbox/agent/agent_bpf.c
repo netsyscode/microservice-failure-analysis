@@ -21,6 +21,7 @@ int attach_to_cgroup(const char *cgroup_path, const char *tcp_int_path, const ch
         fprintf(stderr, "Failed to open cgroup path: %s because %s\n", cgroup_path, strerror(errno));
         return -1;
     }
+    DEBUG("Opened cgroup path: %s\n", cgroup_path);
 
     obj = bpf_object__open(tcp_int_path);
     if (!obj) {
@@ -28,6 +29,8 @@ int attach_to_cgroup(const char *cgroup_path, const char *tcp_int_path, const ch
         close(bpf_cgroup_fd);
         return -1;
     }
+    DEBUG("Opened BPF object from path: %s\n", tcp_int_path);
+    return 0;
 
     prog = bpf_object__find_program_by_name(obj, "tcp_int");
     if (!prog) {

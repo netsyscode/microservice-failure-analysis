@@ -155,11 +155,11 @@ int init(ConfigData *config, struct ring_buffer **rb) {
     }
 
     // Attach cgroup map for tcp_int
-    // if (attach_to_cgroup(CGROUP_PATH, BPF_TCP_INT_PATH, BPF_TCP_INT_NEW_PATH) < 0) {
-    //     fprintf(stderr, "Failed to attach to cgroup\n");
-    //     return -1; // TODO: Change to error code
-    // }
-    // INFO("Attach to cgroup done\n");
+    if (attach_to_cgroup(CGROUP_PATH, BPF_TCP_INT_PATH, BPF_TCP_INT_NEW_PATH) < 0) {
+        fprintf(stderr, "Failed to attach to cgroup\n");
+        return -1;
+    }
+    INFO("Attach to cgroup done\n");
 
     // Update pid_map for pid filtering
     if (read_pids_and_update_map(pid_filter_path, PID_MAP_PATH) < 0) {
@@ -168,12 +168,12 @@ int init(ConfigData *config, struct ring_buffer **rb) {
     }
     INFO("Update pid map done\n");
 
-    // // Open new ring buffer
-    // *rb = ring_buffer__new(bpf_obj_get(RING_BUFFER_PATH), collect_rb, NULL, NULL);
-    // if (!(*rb)) {
-    //     fprintf(stderr, "Failed to open ring buffer\n");
-    //     return -1; // TODO: Change to error code
-    // }
+    // Open new ring buffer
+    *rb = ring_buffer__new(bpf_obj_get(RING_BUFFER_PATH), collect_rb, NULL, NULL);
+    if (!(*rb)) {
+        fprintf(stderr, "Failed to open ring buffer\n");
+        return -1; // TODO: Change to error code
+    }
 
     // Connect to aggregators
     for (int i = 0; i < config->num_aggregators; i++) {
