@@ -5,12 +5,18 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <bpf/bpf.h>
-#include <bpf/libbpf.h>
 #include <errno.h>
 #include <ftw.h>
+
+#include <bpf/bpf.h>
+#include <bpf/libbpf.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/mount.h>
+#include <sys/vfs.h>
+
+#include <linux/magic.h>
 
 #include "debug.h"
 #include "capsule_util.h"
@@ -225,6 +231,53 @@ static int pin_stuff(struct BPF_KERNEL_SKELETON *skel) {
     return 0;
 }
 
+static bool is_bpffs(const char *dir) {
+	struct statfs st_fs;
+
+	if (statfs(dir, &st_fs) < 0)
+		return false;
+
+	return (unsigned long)st_fs.f_type == BPF_FS_MAGIC;
+}
+
+int mount_bpffs(const char *dir) {
+	char err_str[1024];
+
+    /* nothing to do if already mounted */
+	if (is_bpffs(dir)) {
+        printf("BPF filesystem already mounted, skipping...\n");
+		return 0;
+    }
+
+    // https://man7.org/linux/man-pages/man2/mount.2.html
+    // int mount(const char *source, const char *target, const char *filesystemtype, 
+    //          unsigned long mountflags, const void *_Nullable data);
+	bool bind_done = false;
+
+    // 挂载命令尤其是涉及 MS_REC（递归）选项时，可能需要在目录结构的多个层级上重复应用挂载参数
+    // 直到整个目录树正确配置为止。while 循环确保了不停地尝试直到整个目录树被成功设置为私有。
+	while (mount("", dir, "none", MS_PRIVATE | MS_REC, NULL)) {
+		if (errno != EINVAL || bind_done) {
+			fprintf(stderr, "mount --make-private %s failed: %s", dir, strerror(errno));
+			return -1;
+		}
+
+		if (mount(dir, dir, "none", MS_BIND, NULL)) {
+			fprintf(stderr, "mount --bind %s %s failed: %s", dir, dir, strerror(errno));
+			return -1;
+		}
+
+		bind_done = true;
+	}
+
+	if (mount("bpf", dir, "bpf", 0, "mode=0700")) {
+		fprintf(stderr, "mount -t bpf bpf %s failed: %s", dir, strerror(errno));
+		return -1;
+	}
+
+    return 0;
+}
+
 int main() {
     int err = 0;
     struct BPF_KERNEL_SKELETON *skel;
@@ -305,6 +358,12 @@ int main() {
                 goto cleanup;
             }
             break;
+    }
+
+    err = mount_bpffs(PIN_FOLDER);
+    if (err) {
+        fprintf(stderr, "%s\n", "Failed to mount bpffs");
+        goto cleanup;
     }
 
     err = pin_stuff(skel);
