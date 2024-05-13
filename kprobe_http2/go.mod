@@ -1,8 +1,8 @@
-module kprobe_http1_modules
+module kprobe_http2_modules
 
 go 1.22
 
-replace kprobe_http1_modules => ./
+replace kprobe_http2_modules => ./
 
 require (
 	github.com/iovisor/gobpf v0.2.0

@@ -20,9 +20,11 @@ package connections
 
 import (
 	"fmt"
-	"kprobe_http1_modules/module_src/structs"
+	"kprobe_http2_modules/module_src/structs"
+	decoder "kprobe_http2_modules/module_src/decoder"
 	"sync"
 	"time"
+	"strings"
 )
 
 // Factory is a routine-safe container that holds a trackers with unique ID, and able to create new tracker.
@@ -41,12 +43,13 @@ func NewFactory(inactivityThreshold time.Duration) *Factory {
 	}
 }
 
-func printHex(label string, data []byte) {
-    fmt.Printf("%s->\n", label)
+func hexToString(data []byte) string {
+    var sb strings.Builder
     for _, b := range data {
-        fmt.Printf("%02x ", b)
+        fmt.Fprintf(&sb, "%02x ", b)
     }
-    fmt.Println("\n")
+    sb.WriteString("\n")
+    return sb.String()
 }
 
 func (factory *Factory) HandleReadyConnections() {
@@ -58,9 +61,13 @@ func (factory *Factory) HandleReadyConnections() {
 			if len(tracker.sentBuf) == 0 && len(tracker.recvBuf) == 0 {
 				continue
 			}
-			fmt.Printf("========================>\nFound HTTP payload\nRequest->\n%s\n\nResponse->\n%s\n\n<========================\n", tracker.recvBuf, tracker.sentBuf)
-			printHex("Request", tracker.recvBuf)
-			printHex("Response", tracker.sentBuf)
+			// fmt.Printf("========================>\nFound HTTP payload\nRequest->\n%s\n\nResponse->\n%s\n\n<========================\n", tracker.recvBuf, tracker.sentBuf)
+			// fmt.Printf(hexToString(tracker.recvBuf))
+			// fmt.Printf(hexToString(tracker.sentBuf))
+			fmt.Printf("Request->\n")
+			decoder.ParseHTTP2Bytes(hexToString(tracker.recvBuf))
+			fmt.Printf("Response->\n")
+			decoder.ParseHTTP2Bytes(hexToString(tracker.sentBuf))
 		} else if tracker.Malformed() {
 			trackersToDelete[connID] = struct{}{}
 		} else if tracker.IsInactive(factory.inactivityThreshold) {

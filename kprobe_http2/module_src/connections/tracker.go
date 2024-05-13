@@ -19,7 +19,7 @@
 package connections
 
 import (
-	structs2 "kprobe_http1_modules/module_src/structs"
+	structs2 "kprobe_http2_modules/module_src/structs"
 	"log"
 	"sync"
 	"time"

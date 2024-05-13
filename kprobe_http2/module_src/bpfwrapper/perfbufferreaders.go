@@ -22,9 +22,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"kprobe_http1_modules/module_src/connections"
-	"kprobe_http1_modules/module_src/settings"
-	"kprobe_http1_modules/module_src/structs"
+	"kprobe_http2_modules/module_src/connections"
+	"kprobe_http2_modules/module_src/settings"
+	"kprobe_http2_modules/module_src/structs"
 	"log"
 	"unsafe"
 

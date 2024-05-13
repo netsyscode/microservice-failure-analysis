@@ -21,9 +21,10 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	bpfwrapper2 "kprobe_http1_modules/module_src/bpfwrapper"
-	"kprobe_http1_modules/module_src/connections"
-	"kprobe_http1_modules/module_src/settings"
+	bpfwrapper2 "kprobe_http2_modules/module_src/bpfwrapper"
+	"kprobe_http2_modules/module_src/connections"
+	"kprobe_http2_modules/module_src/settings"
+	// "kprobe_http2_modules/module_src/decoder"
 	"log"
 	"os"
 	"os/signal"
