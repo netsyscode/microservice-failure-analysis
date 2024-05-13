@@ -1,4 +1,4 @@
-# Kprobe Sniffer for HTTP/1.x Observability
+# Kprobe Sniffer for HTTP/2.0 Observability
 
 ## Overview
 
