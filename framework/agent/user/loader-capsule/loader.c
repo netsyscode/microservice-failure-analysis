@@ -183,7 +183,9 @@ static int pin_stuff(struct BPF_KERNEL_SKELETON *skel) {
         if (!(*link)) {
 			fprintf(stderr, "prog '%s': failed to auto-attach: %d\n", bpf_program__name(prog), errno);
             if (errno == EOPNOTSUPP) {
+                enum bpf_attach_type attach_type = bpf_program__expected_attach_type(prog);
                 printf("Auto-attaching not supported for program %s, continuing\n", bpf_program__name(prog));
+                printf("Expected attach type: %s(%d)\n", libbpf_bpf_attach_type_str(attach_type), attach_type);
                 continue;
             } else {
     			return errno;

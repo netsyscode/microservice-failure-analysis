@@ -174,6 +174,7 @@ int init(ConfigData *config, struct ring_buffer **rb) {
         fprintf(stderr, "Failed to open ring buffer\n");
         return -1; // TODO: Change to error code
     }
+    INFO("Open ring buffer done\n");
 
     // Connect to aggregators
     for (int i = 0; i < config->num_aggregators; i++) {
@@ -196,8 +197,6 @@ int init(ConfigData *config, struct ring_buffer **rb) {
         }
     }
     INFO("Connect to managers done\n");
-
-    sleep(10);
 
     return 0;
 }

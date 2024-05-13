@@ -11,58 +11,56 @@
 #include "agent_bpf.h"
 
 int attach_to_cgroup(const char *cgroup_path, const char *tcp_int_path, const char *new_link_path) {
-    int bpf_cgroup_fd, bpf_prog_fd, err;
-    struct bpf_object *obj = NULL;
-    struct bpf_program *prog = NULL;
+    int cgroup_fd, prog_fd, link_fd, err = 0;
     struct bpf_link *link = NULL;
+    enum bpf_attach_type attach_type;
 
-    bpf_cgroup_fd = open(cgroup_path, O_RDONLY);
-    if (bpf_cgroup_fd < 0) {
+    cgroup_fd = open(cgroup_path, O_RDONLY);
+    if (cgroup_fd < 0) {
         fprintf(stderr, "Failed to open cgroup path: %s because %s\n", cgroup_path, strerror(errno));
-        return -1;
+        err = -1;
+        goto ret;
     }
     DEBUG("Opened cgroup path: %s\n", cgroup_path);
 
-    obj = bpf_object__open(tcp_int_path);
-    if (!obj) {
+    prog_fd = bpf_obj_get(tcp_int_path);
+    if (prog_fd < 0) {
         fprintf(stderr, "Failed to open BPF object from path: %s\n", tcp_int_path);
-        close(bpf_cgroup_fd);
-        return -1;
+        err = -1;
+        goto close_cgroup;
     }
     DEBUG("Opened BPF object from path: %s\n", tcp_int_path);
-    return 0;
 
-    prog = bpf_object__find_program_by_name(obj, "tcp_int");
-    if (!prog) {
-        fprintf(stderr, "Failed to find BPF program: tcp_int\n");
-        close(bpf_cgroup_fd);
-        bpf_object__close(obj);
-        return -1;
+    // The attach type is derived from the output of loader-capsule
+    attach_type = BPF_CGROUP_SOCK_OPS;
+    link_fd = bpf_link_create(prog_fd, cgroup_fd, attach_type, NULL);
+    if (link_fd < 0) {
+        fprintf(stderr, "Failed to create BPF link: %s\n", strerror(errno));
+        err = -1;
+        goto close_prog;
     }
-
-    link = bpf_program__attach_cgroup(prog, bpf_cgroup_fd);
-    if (!link) {
-        fprintf(stderr, "Failed to attach BPF program to cgroup\n");
-        close(bpf_cgroup_fd);
-        bpf_object__close(obj);
-        return -1;
-    }
+    DEBUG("Created BPF link\n");
 
     // Pin link
-    err = bpf_link__pin(link, new_link_path);
+    err = bpf_obj_pin(link_fd, new_link_path);
     if (err) {
         fprintf(stderr, "Failed to pin BPF link: %s\n", strerror(err));
-        close(bpf_cgroup_fd);
-        bpf_object__close(obj);
-        bpf_link__destroy(link);
-        bpf_object__close(obj);
-        return -1;
+        err = -1;
+        goto close_link;
     }
+    DEBUG("Pinned BPF link to path: %s\n", new_link_path);
 
-    bpf_object__close(obj);
-    bpf_link__destroy(link);
-    bpf_object__close(obj);
-    return 0;
+close_link:
+    close(link_fd);
+
+close_prog:
+    close(prog_fd);
+
+close_cgroup:
+    close(cgroup_fd);
+
+ret:
+    return err;
 }
 
 int read_pids_and_update_map(const char *pid_config_path, const char *pid_map_path) {
