@@ -10,3 +10,5 @@
 **/__pycache__/
 
 ./deps/bpftools/bpftools/
+
+./test-data/
