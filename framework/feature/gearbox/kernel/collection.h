@@ -46,22 +46,23 @@ static inline void context_propagate_at_recv(u32 tgid, struct tcp_sock *tsk, u16
     _context = bpf_map_lookup_elem(&flow_context_map, &f_tuple);
 
     // Additional checks for ingress components
-    bool _is_ingress = is_ingress(tgid), _find_client_tuple = false;
-    if (_is_ingress) {
-        u32 key = 1;
-        struct flow_tuple *client_tuple = bpf_map_lookup_elem(&client_ip_map, &key);
+    // bool _is_ingress = is_ingress(tgid), _find_client_tuple = false;
+    bool _is_ingress = is_ingress(tgid);
+    // if (_is_ingress) {
+    //     u32 key = 1;
+    //     struct flow_tuple *client_tuple = bpf_map_lookup_elem(&client_ip_map, &key);
 
-        if (!client_tuple) {  // This could happen, as the client_ip_map may be empty
-            _find_client_tuple = false;
-        } else {
-            _find_client_tuple = true;
-        }
-    }
+    //     if (!client_tuple) {  // This could happen, as the client_ip_map may be empty
+    //         _find_client_tuple = false;
+    //     } else {
+    //         _find_client_tuple = true;
+    //     }
+    // }
 
     // Generating context
     if (!_context) {
         // INGRESS component has receieved a new request
-        if (_is_ingress && !_find_client_tuple) {
+        if (_is_ingress ) {
             // Update the client_ip_map, which marks the start of a new request
             u32 key = 1;
             bpf_map_update_elem(&client_ip_map, &key, &f_tuple, BPF_ANY);
@@ -151,30 +152,30 @@ static inline void context_propagate_at_send(u32 tgid, struct tcp_sock *tsk, u32
     bpf_probe_read(&context, sizeof(context), _context);
 
     // Additional checks for ingress components
-    bool _is_ingress = is_ingress(tgid), _is_client_tuple = false;
-    if (_is_ingress) {
-        u32 key = 1;
-        struct flow_tuple *client_tuple = bpf_map_lookup_elem(&client_ip_map, &key);
+    // bool _is_ingress = is_ingress(tgid), _is_client_tuple = false;
+    // if (_is_ingress) {
+    //     u32 key = 1;
+    //     struct flow_tuple *client_tuple = bpf_map_lookup_elem(&client_ip_map, &key);
 
-        // This should not happen since the client_ip_map should be updated 
-        // when ingress component parse a FIRST_RECV syscall at context_propagate_at_recv.
-        // At this send time, the client_ip_map should not be empty
-        if (!client_tuple) {
-            bpf_printk("context_propgate_at_send() error: Failed to get client_tuple from client_ip_map\n");
-            return;
-        }
+    //     // This should not happen since the client_ip_map should be updated 
+    //     // when ingress component parse a FIRST_RECV syscall at context_propagate_at_recv.
+    //     // At this send time, the client_ip_map should not be empty
+    //     if (!client_tuple) {
+    //         bpf_printk("context_propgate_at_send() error: Failed to get client_tuple from client_ip_map\n");
+    //         return;
+    //     }
 
-        // Also, now_trace_id should be valid and consistent with the context.trace_id
-        // TODO: 据说这里是因为可能会有bug，导致trace_id更新不正常，然后就一直是这个trace_id了
-        u64 *now_trace_id = bpf_map_lookup_elem(&now_trace_id_map, &key);
-        if (!now_trace_id) {
-            bpf_printk("context_propagate_at_send() error: now_trace_id is NULL\n");
-            return;
-        } else if (*now_trace_id != context.trace_id) {
-            bpf_printk("context_propagate_at_send() error: now_trace_id is not the same as the context.trace_id\n");
-            return;
-        }
-    }
+    //     // Also, now_trace_id should be valid and consistent with the context.trace_id
+    //     // TODO: 据说这里是因为可能会有bug，导致trace_id更新不正常，然后就一直是这个trace_id了
+    //     u64 *now_trace_id = bpf_map_lookup_elem(&now_trace_id_map, &key);
+    //     if (!now_trace_id) {
+    //         bpf_printk("context_propagate_at_send() error: now_trace_id is NULL\n");
+    //         return;
+    //     } else if (*now_trace_id != context.trace_id) {
+    //         bpf_printk("context_propagate_at_send() error: now_trace_id is not the same as the context.trace_id\n");
+    //         return;
+    //     }
+    // }
 
     // Collect metrics
     struct metrics m;
@@ -197,7 +198,7 @@ static inline void context_propagate_at_send(u32 tgid, struct tcp_sock *tsk, u32
     // If the component is not INGRESS 
     // OR 
     // the component is INGRESS and the client_tuple is the not same as the current flow tuple
-    if (!_is_ingress || !_is_client_tuple) {
+    if (1) {
         // Conduct the PROPAGATION:
         // Update flow_context_map, which will be used by tcp_int_add_tcpopt() to inject TCP options
         struct flow_tuple f_tuple = {
@@ -210,22 +211,7 @@ static inline void context_propagate_at_send(u32 tgid, struct tcp_sock *tsk, u32
         context.sender_id = ((u64)HOST_IP << 32) + tgid;
         context.invoke_id = invoke_id;
         bpf_map_update_elem(&flow_context_map, &f_tuple, &context, BPF_ANY);
-    } else {  // The component is INGRESS and the client_tuple is the same as the current flow tuple
-        // Generate additional `ending` edge and transmit it to the user space via ring buffer
-        struct point client_p = {
-            .trace_id = context.trace_id, 
-            .component_id = 0, 
-            .invoke_id = 0
-        };
-        struct edge edge_ending = {.p1 = send_p, .p2 = client_p};
-        struct edge_msg e_msg = {.type = EDGE, .e = edge_ending};
-        bpf_ringbuf_output(&rb, &e_msg, sizeof(e_msg), 0);
-
-        // Since this is the ending, cleanup the maps.
-        u32 key = 1;
-        bpf_map_delete_elem(&client_ip_map, &key);
-        bpf_map_delete_elem(&now_trace_id_map, &key);
-    }
+    } 
 
     bpf_map_delete_elem(&pid_context_map, &tgid);
 }
