@@ -88,16 +88,16 @@ int run(ConfigData *config, struct ring_buffer **rb) {
 
     while (1) {
         ret = ring_buffer__poll(*rb, RING_BUFFER_POLL_TIMEOUT);
-        if (ret) {
-            if (ret == -EINTR) {
-                fprintf(stdout, "Interrupted, exiting gearbox agent\n");
-                ret = 0;
-                break;
-            } else {
-                fprintf(stderr, "Error polling ring buffer: %s\n", strerror(errno));
-                break;
-            }
+
+        if (ret == -EINTR) {
+            fprintf(stdout, "Interrupted, exiting gearbox agent\n");
+            ret = 0;
+            break;
+        } else {
+            fprintf(stderr, "Error polling ring buffer: %s\n", strerror(errno));
+            break;
         }
+
 
         if (cur_pbuffer_sz > 0) {
             for (int i = 0; i < cur_pbuffer_sz / sizeof(struct point); i ++) {
