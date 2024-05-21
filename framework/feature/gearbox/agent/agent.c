@@ -274,13 +274,13 @@ int main(int argc, char **argv) {
     ret = init(&config, &rb);
     INFO("Init done\n");
 
-    // // Run the event processing loop
-    // if (ret == 0) {
-    //     run(&config, &rb);
-    //     INFO("Run done\n");
-    // } else {
-    //     INFO("Failed to run\n");
-    // }
+    // Run the event processing loop
+    if (ret == 0) {
+        run(&config, &rb);
+        INFO("Run done\n");
+    } else {
+        INFO("Failed to run\n");
+    }
 
     cleanup(&config, &rb);
     INFO("Cleanup done\n");
