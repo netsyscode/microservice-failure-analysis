@@ -175,27 +175,39 @@ int init(ConfigData *config, struct ring_buffer **rb) {
     }
     INFO("Open ring buffer done\n");
 
-    // Connect to aggregators
-    for (int i = 0; i < config->num_aggregators; i++) {
-        DEBUG("Connecting to aggregator %d %s:%d\n", i, config->aggregator_ips[i], config->aggregator_ports[i]);
-        config->aggregator_fds[i] = open_client(config->aggregator_ips[i], config->aggregator_ports[i]);
-        if (config->aggregator_fds[i] < 0) {
-            fprintf(stderr, "Failed to connect to aggregator %d\n", i);
-            return -1;
-        }
-    }
-    INFO("Connect to aggregators done\n");
+       // Connect to aggregators
+    // for (int i = 0; i < config->num_aggregators; i++) {
+    //     DEBUG("Connecting to aggregator %d %s:%d\n", i, config->aggregator_ips[i], config->aggregator_ports[i]);
+    //     config->aggregator_fds[i] = open_client(config->aggregator_ips[i], config->aggregator_ports[i]);
+    //     if (config->aggregator_fds[i] < 0) {
+    //         fprintf(stderr, "Failed to connect to aggregator %d\n", i);
+    //         return -1;
+    //     }
+    // }
+    // INFO("Connect to aggregators done\n");
 
     // Connect to managers
-    for (int i = 0; i < config->num_managers; i++) {
-        DEBUG("Connecting to manager %d %s:%d\n", i, config->manager_ips[i], config->manager_ports[i]);
-        config->manager_fds[i] = open_client(config->manager_ips[i], config->manager_ports[i]);
-        if (config->manager_fds[i] < 0) {
+    // for (int i = 0; i < config->num_managers; i++) {
+    //     DEBUG("Connecting to manager %d %s:%d\n", i, config->manager_ips[i], config->manager_ports[i]);
+    //     config->manager_fds[i] = open_client(config->manager_ips[i], config->manager_ports[i]);
+    //     if (config->manager_fds[i] < 0) {
+    //         fprintf(stderr, "Failed to connect to manager %d\n", i);
+    //         return -1;
+    //     }
+    // }
+    // INFO("Connect to managers done\n");
+
+    // Connect to Controllers
+    config->controller_fds = malloc(config->num_controllers * sizeof(int));
+    for (int i = 0; i < config->num_controllers; i++) {
+        DEBUG("Connecting to controller %d %s:%d\n", i, config->controller_ips[i], config->controller_ports[i]);
+        config->controller_fds[i] = open_client(config->controller_ips[i], config->controller_ports[i]);
+        if (config->controller_fds[i] < 0) {
             fprintf(stderr, "Failed to connect to manager %d\n", i);
             return -1;
         }
     }
-    INFO("Connect to managers done\n");
+    INFO("Connect to controller done\n");
 
     return 0;
 }
