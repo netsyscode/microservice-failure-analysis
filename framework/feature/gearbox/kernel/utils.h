@@ -126,8 +126,8 @@ static inline enum IO_state infer_IO_state(u32 tgid, u16 sport, enum syscall_typ
         }
         
         // Update the current I/O state in the IO_state_map
-        bpf_map_update_elem(&IO_state_map, &tgid_sport_s, &ret_io_s, BPF_ANY);
     }
+    bpf_map_update_elem(&IO_state_map, &tgid_sport_s, &ret_io_s, BPF_ANY);
 
 return_val:
     return ret_io_s;
