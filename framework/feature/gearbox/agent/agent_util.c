@@ -188,18 +188,25 @@ int parse_config_file(const char *filename, ConfigData *config) {
 
 void print_config_data(const ConfigData *config) {
     // 打印 Aggregators 的信息
-    printf("Aggregators:\n");
-    for (int i = 0; i < config->num_aggregators; i++) {
-        printf("  Aggregator %d:\n", i + 1);
-        printf("    IP: %s\n", config->aggregator_ips[i]);
-        printf("    Port for loader: %d\n", config->aggregator_ports[i]);
-    }
+    // printf("Aggregators:\n");
+    // for (int i = 0; i < config->num_aggregators; i++) {
+    //     printf("  Aggregator %d:\n", i + 1);
+    //     printf("    IP: %s\n", config->aggregator_ips[i]);
+    //     printf("    Port for loader: %d\n", config->aggregator_ports[i]);
+    // }
 
-    // 打印 Managers 的信息
-    printf("Managers:\n");
-    for (int i = 0; i < config->num_managers; i++) {
-        printf("  Manager %d:\n", i + 1);
-        printf("    IP: %s\n", config->manager_ips[i]);
-        printf("    Port for loader: %d\n", config->manager_ports[i]);
+    // // 打印 Managers 的信息
+    // printf("Managers:\n");
+    // for (int i = 0; i < config->num_managers; i++) {
+    //     printf("  Manager %d:\n", i + 1);
+    //     printf("    IP: %s\n", config->manager_ips[i]);
+    //     printf("    Port for loader: %d\n", config->manager_ports[i]);
+    // }
+
+    printf("Controllers:\n");
+    for (int i = 0; i < config->num_controllers; i++) {
+        printf("  Controller %d:\n", i + 1);
+        printf("    IP: %s\n", config->controller_ips[i]);
+        printf("    Port: %d\n", config->controller_ports[i]);
     }
 }
