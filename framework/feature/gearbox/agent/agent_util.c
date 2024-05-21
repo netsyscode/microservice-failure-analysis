@@ -141,31 +141,43 @@ int parse_config_file(const char *filename, ConfigData *config) {
         return -1;
     }
 
-    // Parse Aggregators
-    cJSON *aggregators = cJSON_GetObjectItemCaseSensitive(json, "aggregators");
-    int num_aggregators = cJSON_GetArraySize(aggregators);
-    config->num_aggregators = num_aggregators;
-    config->aggregator_ips = malloc(num_aggregators * sizeof(char *));
-    config->aggregator_ports = malloc(num_aggregators * sizeof(int));
-    config->aggregator_fds = malloc(num_aggregators * sizeof(int));
-    for (int i = 0; i < num_aggregators; i++) {
-        cJSON *aggregator = cJSON_GetArrayItem(aggregators, i);
-        config->aggregator_ips[i] = strdup(cJSON_GetObjectItemCaseSensitive(aggregator, "ip")->valuestring);
-        config->aggregator_ports[i] = cJSON_GetObjectItemCaseSensitive(aggregator, "loader_port")->valueint;
+       //Parse Controller
+    cJSON *controllers = cJSON_GetObjectItemCaseSensitive(json, "controller");
+    int num_controller = cJSON_GetArraySize(controllers);
+    config->num_controllers = num_controller;
+    config->controller_ips = malloc(num_controller * sizeof(char *));
+    config->controller_ports = malloc(num_controller * sizeof(int));
+    for (int i = 0; i < num_controller; i++) {
+        cJSON *controller = cJSON_GetArrayItem(controllers, i);
+        config->controller_ips[i] = strdup(cJSON_GetObjectItemCaseSensitive(controller, "ip")->valuestring);
+        config->controller_ports[i] = cJSON_GetObjectItemCaseSensitive(controller, "port")->valueint;
     }
 
-    // Parse Manangers
-    cJSON *managers = cJSON_GetObjectItemCaseSensitive(json, "managers");
-    int num_managers = cJSON_GetArraySize(managers);
-    config->num_managers = num_managers;
-    config->manager_ips = malloc(num_managers * sizeof(char *));
-    config->manager_ports = malloc(num_managers * sizeof(int));
-    config->manager_fds = malloc(num_managers * sizeof(int));
-    for (int i = 0; i < num_managers; i++) {
-        cJSON *manager = cJSON_GetArrayItem(managers, i);
-        config->manager_ips[i] = strdup(cJSON_GetObjectItemCaseSensitive(manager, "ip")->valuestring);
-        config->manager_ports[i] = cJSON_GetObjectItemCaseSensitive(manager, "loader_port")->valueint;
-    }
+    // // Parse Aggregators
+    // cJSON *aggregators = cJSON_GetObjectItemCaseSensitive(json, "aggregators");
+    // int num_aggregators = cJSON_GetArraySize(aggregators);
+    // config->num_aggregators = num_aggregators;
+    // config->aggregator_ips = malloc(num_aggregators * sizeof(char *));
+    // config->aggregator_ports = malloc(num_aggregators * sizeof(int));
+    // config->aggregator_fds = malloc(num_aggregators * sizeof(int));
+    // for (int i = 0; i < num_aggregators; i++) {
+    //     cJSON *aggregator = cJSON_GetArrayItem(aggregators, i);
+    //     config->aggregator_ips[i] = strdup(cJSON_GetObjectItemCaseSensitive(aggregator, "ip")->valuestring);
+    //     config->aggregator_ports[i] = cJSON_GetObjectItemCaseSensitive(aggregator, "loader_port")->valueint;
+    // }
+
+    // // Parse Manangers
+    // cJSON *managers = cJSON_GetObjectItemCaseSensitive(json, "managers");
+    // int num_managers = cJSON_GetArraySize(managers);
+    // config->num_managers = num_managers;
+    // config->manager_ips = malloc(num_managers * sizeof(char *));
+    // config->manager_ports = malloc(num_managers * sizeof(int));
+    // config->manager_fds = malloc(num_managers * sizeof(int));
+    // for (int i = 0; i < num_managers; i++) {
+    //     cJSON *manager = cJSON_GetArrayItem(managers, i);
+    //     config->manager_ips[i] = strdup(cJSON_GetObjectItemCaseSensitive(manager, "ip")->valuestring);
+    //     config->manager_ports[i] = cJSON_GetObjectItemCaseSensitive(manager, "loader_port")->valueint;
+    // }
 
     // Clean up
     cJSON_Delete(json);
