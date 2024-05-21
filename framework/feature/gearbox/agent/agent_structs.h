@@ -20,6 +20,11 @@ typedef struct {
 
     int *aggregator_fds;
     int *manager_fds;
+    
+    int num_controllers;
+    char **controller_ips;
+    int *controller_ports;
+    int *controller_fds;
 } ConfigData;
 
 struct edge_for_path {
