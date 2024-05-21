@@ -24,7 +24,7 @@ static inline bool is_filtered_pid(u32 tgid) {
         return true;
     }
 
-    return true;
+    return false;
 }
 
 /**
