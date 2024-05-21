@@ -63,16 +63,16 @@ int collect_rb(void *ctx, void *data, size_t data_sz) {
                 .duration = p_msg->m.duration,
             };
 
-            if (cur_pbuffer_sz + sizeof(struct point) <= POINT_BUFFER_SIZE &&
-                cur_mbuffer_sz + sizeof(struct metrics) <= METRIC_BUFFER_SIZE) {
-                memcpy(point_buffer + cur_pbuffer_sz, &p, sizeof(struct point));
-                cur_pbuffer_sz += sizeof(struct point);
+            // if (cur_pbuffer_sz + sizeof(struct point) <= POINT_BUFFER_SIZE &&
+            //     cur_mbuffer_sz + sizeof(struct metrics) <= METRIC_BUFFER_SIZE) {
+            //     memcpy(point_buffer + cur_pbuffer_sz, &p, sizeof(struct point));
+            //     cur_pbuffer_sz += sizeof(struct point);
 
-                memcpy(metric_buffer + cur_mbuffer_sz, &m, sizeof(struct metrics));
-                cur_mbuffer_sz += sizeof(struct metrics);
-            } else {
-                fprintf(stderr, "Point or metric buffer full\n");
-            }            
+            //     memcpy(metric_buffer + cur_mbuffer_sz, &m, sizeof(struct metrics));
+            //     cur_mbuffer_sz += sizeof(struct metrics);
+            // } else {
+            //     fprintf(stderr, "Point or metric buffer full\n");
+            // }            
             break;
         }
         default:
@@ -99,29 +99,29 @@ int run(ConfigData *config, struct ring_buffer **rb) {
         }
 
 
-        if (cur_pbuffer_sz > 0) {
-            for (int i = 0; i < cur_pbuffer_sz / sizeof(struct point); i ++) {
-                struct point *p = (struct point *)(point_buffer + i * sizeof(struct point));
-                int id = p->trace_id % config->num_aggregators;
+        // if (cur_pbuffer_sz > 0) {
+        //     for (int i = 0; i < cur_pbuffer_sz / sizeof(struct point); i ++) {
+        //         struct point *p = (struct point *)(point_buffer + i * sizeof(struct point));
+        //         int id = p->trace_id % config->num_aggregators;
 
-                ret = write(config->aggregator_fds[id], point_buffer + i * sizeof(struct point), sizeof(struct point));
-                DEBUG("write point to aggregator %d %s:%d\n", id, config->aggregator_ips[id], config->aggregator_ports[id]);
-                if (ret < 0) {
-                    fprintf(stderr, "Failed to write point to aggregator %d: %s\n", id, strerror(errno));
-                    return ret;
-                }
+        //         ret = write(config->aggregator_fds[id], point_buffer + i * sizeof(struct point), sizeof(struct point));
+        //         DEBUG("write point to aggregator %d %s:%d\n", id, config->aggregator_ips[id], config->aggregator_ports[id]);
+        //         if (ret < 0) {
+        //             fprintf(stderr, "Failed to write point to aggregator %d: %s\n", id, strerror(errno));
+        //             return ret;
+        //         }
 
-                ret = write(config->aggregator_fds[id], metric_buffer + i * sizeof(struct metrics), sizeof(struct metrics));
-                DEBUG("write metric to aggregator %d %s:%d\n", id, config->aggregator_ips[id], config->aggregator_ports[id]);
-                if (ret < 0) {
-                    fprintf(stderr, "Failed to write metric to aggregator %d: %s\n", id, strerror(errno));
-                    return ret;
-                }
-            }
+        //         ret = write(config->aggregator_fds[id], metric_buffer + i * sizeof(struct metrics), sizeof(struct metrics));
+        //         DEBUG("write metric to aggregator %d %s:%d\n", id, config->aggregator_ips[id], config->aggregator_ports[id]);
+        //         if (ret < 0) {
+        //             fprintf(stderr, "Failed to write metric to aggregator %d: %s\n", id, strerror(errno));
+        //             return ret;
+        //         }
+        //     }
 
-            cur_pbuffer_sz = 0;
-            cur_mbuffer_sz = 0;
-        }
+        //     cur_pbuffer_sz = 0;
+        //     cur_mbuffer_sz = 0;
+        // }
 
         if (cur_ebuffer_sz > 0) {
             for (int i = 0; i < cur_ebuffer_sz / sizeof(struct edge_for_path); i ++) {
