@@ -83,8 +83,8 @@ int read_pids_and_update_map(const char *pid_config_path, const char *pid_map_pa
     }
 
     while (fgets(line, sizeof(line), fp)) {
-        __u32 pid = atoi(line);
-        __u32 value = 1;
+        __u32 pid, value;
+        sscanf(line, "%u %u", &pid, &value);
 
         if (pid > 0) {
             if (bpf_map_update_elem(pid_map_fd, &pid, &value, BPF_ANY) != 0) {
