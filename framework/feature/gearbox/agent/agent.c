@@ -126,9 +126,8 @@ int run(ConfigData *config, struct ring_buffer **rb) {
         if (cur_ebuffer_sz > 0) {
             for (int i = 0; i < cur_ebuffer_sz / sizeof(struct edge_for_path); i ++) {
                 struct edge_for_path *e = (struct edge_for_path *)(edge_buffer + i * sizeof(struct edge_for_path));
-                int id = e->trace_id % config->num_managers;
-
-                ret = write(config->manager_fds[id], (void *)e, sizeof(struct edge_for_path));
+                int id = e->trace_id % config->num_controllers;
+                ret = write(config->controller_fds[id], (void *)e, sizeof(struct edge_for_path));
                 DEBUG("write edge to manager %d\n", id);
                 if (ret < 0) {
                     fprintf(stderr, "Failed to write to manager %d: %s\n", id, strerror(errno));
