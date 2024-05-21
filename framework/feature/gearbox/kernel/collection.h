@@ -32,14 +32,16 @@ static inline bool is_filtered_pid(u32 tgid) {
  * context based on flow tuple, generates and transimits points and edges, and propgates the context 
  * from flow_context_map to pid_context_map. For INGRESS components, it also generates new contexts.
  */
-static inline void context_propagate_at_recv(u32 tgid, struct tcp_sock *tsk, u32 saddr, u32 daddr, u16 sport, u16 dport) {
+static inline void context_propagate_at_recv(u32 tgid, struct tcp_sock *tsk, u16 sport, u16 dport) {
     // Retrieve msg_context from flow_context_map
+    u32 skc_saddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.inet_saddr));
+    u32 skc_daddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.sk.__sk_common.skc_daddr));
     struct msg_context *_context, context = {0};
     struct flow_tuple f_tuple = {
         .sport = sport,
         .dport = dport,
-        .sip = saddr,
-        .dip = daddr,
+        .sip = skc_saddr,
+        .dip = skc_daddr,
     };
     _context = bpf_map_lookup_elem(&flow_context_map, &f_tuple);
 
@@ -307,7 +309,7 @@ static inline void process_exit_recv(struct trace_event_raw_sys_exit *ctx, enum 
     u32 skc_saddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.inet_saddr));
     u32 skc_daddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.sk.__sk_common.skc_daddr));
     if (io_s == FIRST_RECV) {
-        context_propagate_at_recv(tgid, tsk, skc_saddr, skc_daddr, sport, dport);
+        context_propagate_at_recv(tgid, tsk, sport, dport);
     }
 
     bpf_map_delete_elem(&read_args_map, &tgid);
