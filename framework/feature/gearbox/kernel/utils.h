@@ -14,8 +14,11 @@
  * Checks if the current component is the INGRESS component
  */
 static inline bool is_ingress(u32 tgid) {
-    // TODO: 这个需要被实现地更好一些
-    return tgid == INGRESS_TGID;
+    u32 *find_tgid = bpf_map_lookup_elem(&pid_map, &tgid);
+    if (!find_tgid) { 
+        return false;
+    }
+    return *find_tgid;
 }
 
 /**
