@@ -3,17 +3,15 @@ import threading
 from ctypes import *
 import argparse
 
-
-
 class Edge(LittleEndianStructure):
     _pack_ = 1
     _fields_ = [
         #(name, ctype)
-        ('traceID',c_uint64),
-        ('componentID1',c_uint64),
-        ('invokeID1',c_uint16),
-        ('componentID2',c_uint64),
-        ('invokeID2',c_uint16),
+        ('trace_id',c_uint64),
+        ('component_id1',c_uint64),
+        ('invoke_id1',c_uint16),
+        ('component_id2',c_uint64),
+        ('invoke_id2',c_uint16),
         ('num',c_uint16)
     ]
 
@@ -32,7 +30,7 @@ def handle_client(conn, addr):
         edge.decode(data)
         if not data:
             break
-        print(f"Received edge: {edge.traceID} {edge.componentID1} {edge.invokeID1} {edge.componentID2} {edge.invokeID2} {edge.num}")
+        print(f"Received edge: {edge.trace_id} {edge.component_id1} {edge.invoke_id1} {edge.component_id2} {edge.invoke_id2} {edge.num}")
     conn.close()
 
 def start_server(host='10.0.1.132', port=18080):

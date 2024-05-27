@@ -292,8 +292,8 @@ static inline void process_exit_recv(struct trace_event_raw_sys_exit *ctx, enum 
         return;
     }
 
-    u32 skc_saddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.inet_saddr));
-    u32 skc_daddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.sk.__sk_common.skc_daddr));
+    // u32 skc_saddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.inet_saddr));
+    // u32 skc_daddr = bpf_ntohl(BPF_CORE_READ(tsk, inet_conn.icsk_inet.sk.__sk_common.skc_daddr));
     if (io_s == FIRST_RECV) {
         context_propagate_at_recv(tgid, tsk, sport, dport);
     }

@@ -6,7 +6,6 @@
 #include "maps.h"
 
 
-#define INGRESS_TGID       3865781
 #define HOST_IP         3396398369  // 202.112.237.33
 // 3396398373  // 202.112.237.37
 

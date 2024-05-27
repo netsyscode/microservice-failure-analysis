@@ -61,18 +61,7 @@ int collect_rb(void *ctx, void *data, size_t data_sz) {
                 .snd_cwnd = p_msg->m.snd_cwnd,
                 .rtt_us = p_msg->m.rtt_us,
                 .duration = p_msg->m.duration,
-            };
-
-            // if (cur_pbuffer_sz + sizeof(struct point) <= POINT_BUFFER_SIZE &&
-            //     cur_mbuffer_sz + sizeof(struct metrics) <= METRIC_BUFFER_SIZE) {
-            //     memcpy(point_buffer + cur_pbuffer_sz, &p, sizeof(struct point));
-            //     cur_pbuffer_sz += sizeof(struct point);
-
-            //     memcpy(metric_buffer + cur_mbuffer_sz, &m, sizeof(struct metrics));
-            //     cur_mbuffer_sz += sizeof(struct metrics);
-            // } else {
-            //     fprintf(stderr, "Point or metric buffer full\n");
-            // }            
+            };  
             break;
         }
         default:
@@ -97,31 +86,6 @@ int run(ConfigData *config, struct ring_buffer **rb) {
             fprintf(stderr, "Error polling ring buffer: %s\n", strerror(errno));
             break;
         }
-
-
-        // if (cur_pbuffer_sz > 0) {
-        //     for (int i = 0; i < cur_pbuffer_sz / sizeof(struct point); i ++) {
-        //         struct point *p = (struct point *)(point_buffer + i * sizeof(struct point));
-        //         int id = p->trace_id % config->num_aggregators;
-
-        //         ret = write(config->aggregator_fds[id], point_buffer + i * sizeof(struct point), sizeof(struct point));
-        //         DEBUG("write point to aggregator %d %s:%d\n", id, config->aggregator_ips[id], config->aggregator_ports[id]);
-        //         if (ret < 0) {
-        //             fprintf(stderr, "Failed to write point to aggregator %d: %s\n", id, strerror(errno));
-        //             return ret;
-        //         }
-
-        //         ret = write(config->aggregator_fds[id], metric_buffer + i * sizeof(struct metrics), sizeof(struct metrics));
-        //         DEBUG("write metric to aggregator %d %s:%d\n", id, config->aggregator_ips[id], config->aggregator_ports[id]);
-        //         if (ret < 0) {
-        //             fprintf(stderr, "Failed to write metric to aggregator %d: %s\n", id, strerror(errno));
-        //             return ret;
-        //         }
-        //     }
-
-        //     cur_pbuffer_sz = 0;
-        //     cur_mbuffer_sz = 0;
-        // }
 
         if (cur_ebuffer_sz > 0) {
             for (int i = 0; i < cur_ebuffer_sz / sizeof(struct edge_for_path); i ++) {
@@ -175,28 +139,6 @@ int init(ConfigData *config, struct ring_buffer **rb) {
     }
     INFO("Open ring buffer done\n");
 
-       // Connect to aggregators
-    // for (int i = 0; i < config->num_aggregators; i++) {
-    //     DEBUG("Connecting to aggregator %d %s:%d\n", i, config->aggregator_ips[i], config->aggregator_ports[i]);
-    //     config->aggregator_fds[i] = open_client(config->aggregator_ips[i], config->aggregator_ports[i]);
-    //     if (config->aggregator_fds[i] < 0) {
-    //         fprintf(stderr, "Failed to connect to aggregator %d\n", i);
-    //         return -1;
-    //     }
-    // }
-    // INFO("Connect to aggregators done\n");
-
-    // Connect to managers
-    // for (int i = 0; i < config->num_managers; i++) {
-    //     DEBUG("Connecting to manager %d %s:%d\n", i, config->manager_ips[i], config->manager_ports[i]);
-    //     config->manager_fds[i] = open_client(config->manager_ips[i], config->manager_ports[i]);
-    //     if (config->manager_fds[i] < 0) {
-    //         fprintf(stderr, "Failed to connect to manager %d\n", i);
-    //         return -1;
-    //     }
-    // }
-    // INFO("Connect to managers done\n");
-
     // Connect to Controllers
     config->controller_fds = malloc(config->num_controllers * sizeof(int));
     for (int i = 0; i < config->num_controllers; i++) {
@@ -214,46 +156,25 @@ int init(ConfigData *config, struct ring_buffer **rb) {
 
 void cleanup(ConfigData *config, struct ring_buffer **rb) {
     // For config
-    if (config->aggregator_ips != NULL) {
-        for (int i = 0; i < config->num_aggregators; i++) {
-            if (config->aggregator_ips[i] != NULL) {
-                free(config->aggregator_ips[i]);
+    if (config->controller_ips != NULL) {
+        for (int i = 0; i < config->num_controllers; i++) {
+            if (config->controller_ips[i] != NULL) {
+                free(config->controller_ips[i]);
             }
         }
-        free(config->aggregator_ips);
-        config->aggregator_ips = NULL;
+        free(config->controller_ips);
+        config->controller_ips = NULL;
     }
-    if (config->aggregator_ports != NULL) {
-        free(config->aggregator_ports);
-        config->aggregator_ports = NULL;
+    if (config->controller_ports != NULL) {
+        free(config->controller_ports);
+        config->controller_ports = NULL;
     }
-    if (config->aggregator_fds != NULL) {
-        for (int i = 0; i < config->num_aggregators; i++) {
-            write(config->aggregator_fds[i], "QUIT", 4);
+    if (config->controller_fds != NULL) {
+        for (int i = 0; i < config->num_controllers; i++) {
+            write(config->controller_fds[i], "QUIT", 4);
         }
-        free(config->aggregator_fds);
-        config->aggregator_fds = NULL;
-    }
-
-    if (config->manager_ips != NULL) {
-        for (int i = 0; i < config->num_managers; i++) {
-            if (config->manager_ips[i] != NULL) {
-                free(config->manager_ips[i]);
-            }
-        }
-        free(config->manager_ips);
-        config->manager_ips = NULL;
-    }
-    if (config->manager_ports != NULL) {
-        free(config->manager_ports);
-        config->manager_ports = NULL;
-    }
-    if (config->manager_fds != NULL) {
-        for (int i = 0; i < config->num_managers; i++) {
-            write(config->manager_fds[i], "QUIT", 4);
-        }
-        free(config->manager_fds);
-        config->manager_fds = NULL;
+        free(config->controller_fds);
+        config->controller_fds = NULL;
     }
 
     // For ring buffer

@@ -11,4 +11,4 @@
 
 ./deps/bpftools/bpftools/
 
-**/test-data/
+**/test-data/**

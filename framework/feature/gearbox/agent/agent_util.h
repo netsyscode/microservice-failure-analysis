@@ -5,7 +5,6 @@
 
 extern char *config_path;
 extern char *pid_filter_path;
-extern int this_aggregator_idx;
 
 extern DebugLevel debug_level;
 
