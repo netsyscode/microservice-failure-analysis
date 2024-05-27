@@ -1,0 +1,24 @@
+---
+- name: Compile and Run Gearbox on all nodes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove the gearbox directory
+      file:
+        path: "/sys/fs/bpf/gearbox"
+        state: absent
+
+    # - name: Compile Gearbox
+    #   shell: |
+    #     cd /root/microservice-failure-analysis/framework/feature/gearbox
+    #     make
+    #   args:
+    #     executable: /bin/bash
+
+    # - name: Run loader-capsule and agent
+    #   shell: |
+    #     cd /root/microservice-failure-analysis/build/gearbox
+    #     ./loader-capsule
+    #   args:
+    #     executable: /bin/bash
+...

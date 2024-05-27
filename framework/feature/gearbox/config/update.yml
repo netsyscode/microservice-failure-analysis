@@ -1,0 +1,24 @@
+---
+- name: Ensure repo is updated on workers
+  hosts: workers
+  become: yes  # 使用root权限执行
+  tasks:
+    - name: Check if the repository exists
+      stat:
+        path: /root/microservice-failure-analysis/
+      register: repo_dir  # 将结果注册到变量repo_dir
+
+    - name: Fail if the repository does not exist
+      fail:
+        msg: "Required repository does not exist at /root/microservice-failure-analysis/"
+      when: not repo_dir.stat.exists
+
+    - name: Pull the latest update from feature/gearbox
+      git:
+        repo: 'https://github.com/netsyscode/microservice-failure-analysis'
+        dest: '/root/microservice-failure-analysis'
+        version: 'feature/gearbox'
+        force: yes
+        update: yes  # 拉取最新的代码
+      when: repo_dir.stat.exists  # 当目录存在时执行更新
+...
