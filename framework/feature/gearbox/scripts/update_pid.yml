@@ -1,0 +1,120 @@
+---
+- name: Gather Pods Information and Distribute to Workers
+  hosts: localhost
+  gather_facts: no
+  vars:
+    namespace: default
+    labels: app in (service2,service3)
+    ingress_label: app=service1
+    output_dir: /root/microservice-failure-analysis/framework/feature/gearbox/output
+  tasks:
+    - name: Get Pods with specific labels
+      shell: >
+        kubectl get pods -n {{ namespace }} -l "{{ labels }}"
+        -o jsonpath='{range .items[*]}{.metadata.name} {.status.hostIP}{"\n"}{end}'
+      register: pod_info
+      changed_when: false
+
+    - name: Save Pod information
+      copy:
+        content: "{{ pod_info.stdout_lines | map('split', ' ') | list | to_json }}"
+        dest: /tmp/pod_host_mapping.json
+
+    - name: Get Pods with ingress label
+      shell: >
+        kubectl get pods -n {{ namespace }} -l "{{ ingress_label }}"
+        -o jsonpath='{range .items[*]}{.metadata.name} {.status.hostIP}{"\n"}{end}'
+      register: ingress_pod_info
+      changed_when: false
+
+    - name: Save ingress Pod information
+      copy:
+        content: "{{ ingress_pod_info.stdout_lines | map('split', ' ') | list | to_json }}"
+        dest: /tmp/ingress_pod_host_mapping.json
+
+    - name: Distribute Pod information to workers
+      copy:
+        src: /tmp/pod_host_mapping.json
+        dest: /tmp/pod_host_mapping.json
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['workers'] }}"
+
+    - name: Distribute ingress Pod information to workers
+      copy:
+        src: /tmp/ingress_pod_host_mapping.json
+        dest: /tmp/ingress_pod_host_mapping.json
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['workers'] }}"
+
+- name: Retrieve Pod PIDs and Write to File
+  hosts: workers
+  gather_facts: no
+  vars:
+    output_dir: /root/microservice-failure-analysis/framework/feature/gearbox/output
+  tasks:
+    - name: Create output directory if it doesn't exist
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clear the output files
+      command: "truncate -s 0 {{ item }}"
+      with_items:
+        - "{{ output_dir }}/pod_pid_info.txt"
+        - "{{ output_dir }}/pid.txt"
+
+    - name: Load Pod Mapping
+      slurp:
+        src: /tmp/pod_host_mapping.json
+      register: pod_host_mapping_content
+
+    - name: Load Ingress Pod Mapping
+      slurp:
+        src: /tmp/ingress_pod_host_mapping.json
+      register: ingress_pod_host_mapping_content
+
+    - name: Decode Pod Mapping Content
+      set_fact:
+        pod_host_mapping: "{{ pod_host_mapping_content.content | b64decode | from_json }}"
+        ingress_pod_host_mapping: "{{ ingress_pod_host_mapping_content.content | b64decode | from_json }}"
+
+    - name: Filter Relevant Pods for this Host
+      set_fact:
+        relevant_pods: "{{ pod_host_mapping | selectattr(1, 'equalto', ansible_host) | list }}"
+        relevant_ingress_pods: "{{ ingress_pod_host_mapping | selectattr(1, 'equalto', ansible_host) | list }}"
+
+    - name: Ensure Relevant Pods Exist
+      fail:
+        msg: "No relevant pods on this host"
+      when: relevant_pods | length == 0 and relevant_ingress_pods | length == 0
+
+    - name: Print Relevant Pods Information
+      debug:
+        msg: "Relevant Pods for host {{ ansible_host }}: {{ relevant_pods + relevant_ingress_pods }}"
+
+    - name: Retrieve PIDs and Write to File for Regular Pods
+      shell: |
+        for pod in {{ relevant_pods | map(attribute=0) | join(' ') }}; do
+          pod_id=$(crictl ps -a | grep $pod | awk '{print $1}')
+          pid=$(crictl inspect --output go-template --template '{{ "{{.info.pid}}" }}' $pod_id)
+          echo "Pod: $pod, Pod ID: $pod_id, PID: $pid regular" >> {{ output_dir }}/pod_pid_info.txt
+          echo "$pid 0" >> {{ output_dir }}/pid.txt
+        done
+      args:
+        executable: /bin/bash
+      when: relevant_pods | length > 0
+      register: regular_pods_result
+
+    - name: Retrieve PIDs and Write to File for Ingress Pods
+      shell: |
+        for pod in {{ relevant_ingress_pods | map(attribute=0) | join(' ') }}; do
+          pod_id=$(crictl ps -a | grep $pod | awk '{print $1}')
+          pid=$(crictl inspect --output go-template --template '{{ "{{.info.pid}}" }}' $pod_id)
+          echo "Pod: $pod, Pod ID: $pod_id, PID: $pid ingress" >> {{ output_dir }}/pod_pid_info.txt
+          echo "$pid 1" >> {{ output_dir }}/pid.txt
+        done
+      args:
+        executable: /bin/bash
+      when: relevant_ingress_pods | length > 0
+      register: ingress_pods_result

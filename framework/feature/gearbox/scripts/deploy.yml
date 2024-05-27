@@ -1,0 +1,23 @@
+- name: Compile and Run Gearbox on worker nodes
+  hosts: workers
+  become: yes
+  tasks:
+    - name: Remove the gearbox eBPF directory
+      file:
+        path: "/sys/fs/bpf/gearbox"
+        state: absent
+
+    - name: Compile Gearbox
+      shell: |
+        cd /root/microservice-failure-analysis/framework/feature/gearbox
+        make clean
+        make
+      args:
+        executable: /bin/bash
+
+    - name: Run loader-capsule and agent
+      shell: |
+        cd /root/microservice-failure-analysis/build/gearbox
+        ./loader-capsule
+      args:
+        executable: /bin/bash

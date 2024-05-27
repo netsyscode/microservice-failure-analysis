@@ -1,0 +1,15 @@
+- name: Cleanup Gearbox on worker nodes
+  hosts: workers
+  become: yes
+  tasks:
+    - name: Remove the gearbox eBPF directory
+      file:
+        path: "/sys/fs/bpf/gearbox"
+        state: absent
+
+    - name: Clean Gearbox
+      shell: |
+        cd /root/microservice-failure-analysis/framework/feature/gearbox
+        make clean
+      args:
+        executable: /bin/bash
