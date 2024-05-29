@@ -2,6 +2,7 @@
 - name: Ensure repo is updated on workers
   hosts: workers
   become: yes  # 使用root权限执行
+  gather_facts: no  # 不收集主机信息
   tasks:
     - name: Check if the repository exists
       stat:

@@ -1,6 +1,7 @@
 - name: Cleanup Gearbox on worker nodes
-  hosts: workers
+  hosts: all
   become: yes
+  gather_facts: no
   tasks:
     - name: Remove the gearbox eBPF directory
       file:
