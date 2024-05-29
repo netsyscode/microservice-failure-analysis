@@ -15,7 +15,13 @@ def handle_client(conn, addr):
         edge.decode(data)
         if not data:
             break
-        print(f"Received edge: {edge.trace_id} {edge.component_id1} {edge.invoke_id1} {edge.component_id2} {edge.invoke_id2} {edge.num}")
+        print(f"Received edge: \
+              {edge.trace_id} \
+              {edge.component_id_1} \
+              {edge.invoke_id_1} \
+              {edge.component_id_2} \
+              {edge.invoke_id2} \
+              {edge.num}")
     conn.close()
 
 def start_server(config: Config):

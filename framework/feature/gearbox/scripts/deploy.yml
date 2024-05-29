@@ -1,17 +1,14 @@
+---
+- import_playbook: ./update_repo.yml
+- import_playbook: ./cleanup.yml
+
 - name: Compile and Run Gearbox on worker nodes
   hosts: workers
   become: yes
   gather_facts: no
   tasks:
-    - name: Remove the gearbox eBPF directory
-      file:
-        path: "/sys/fs/bpf/gearbox"
-        state: absent
-
     - name: Compile Gearbox
-      shell: |
-        make clean
-        make
+      shell: make > /tmp/gearbox-build.log
       args:
         chdir: /root/microservice-failure-analysis/framework/feature/gearbox
         executable: /bin/bash
@@ -22,28 +19,28 @@
         chdir: /root/microservice-failure-analysis/build/gearbox
         executable: /bin/bash
 
-- name: Sync config and run controller
+- import_playbook: ./update_pid.yml
+- import_playbook: ./update_config.yml
+
+- name: Run gearbox controller
   hosts: controller
   become: yes
   gather_facts: no
   tasks:
-    - name: Sync config to workers
-      copy:
-        src: /root/microservice-failure-analysis/framework/feature/gearbox/config/config.json
-        dest: /root/microservice-failure-analysis/framework/feature/gearbox/config/config.json
-      delegate_to: "{{ item }}"
-      with_items: "{{ groups['workers'] }}"
-
-    - name: Check if tmux session exists
-      shell: tmux has-session -t gearbox_controller
-      register: tmux_session_check
-  
-    - name: Kill tmux session if it exists
-      shell: tmux kill-session -t gearbox_controller
-      when: tmux_session_check.rc == 0
-
     - name: Run controller
-      shell: tmux new-session -d -s gearbox_controller 'python3 ./controller.py -f ../config/config.json'
+      shell: tmux new-session -d -s gearbox_controller 'python3 ./controller.py -f ../config/config.json; sleep 10000000000'
       args:
         chdir: /root/microservice-failure-analysis/framework/feature/gearbox/server
         executable: /bin/bash
+
+- name: Run gearbox agent
+  hosts: workers
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Run agent
+      shell: tmux new-session -d -s gearbox_agent './agent -c ../../framework/feature/gearbox/config/config.json -p ../../framework/feature/gearbox/output/pid.txt -d 2; sleep 10000000000'
+      args:
+        chdir: /root/microservice-failure-analysis/build/gearbox
+        executable: /bin/bash
+...

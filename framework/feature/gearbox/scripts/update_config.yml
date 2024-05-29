@@ -1,0 +1,13 @@
+---
+- name: Sync config 
+  hosts: controller
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Sync config to workers
+      copy:
+        src: /root/microservice-failure-analysis/framework/feature/gearbox/config/config.json
+        dest: /root/microservice-failure-analysis/framework/feature/gearbox/config/config.json
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['workers'] }}"
+...

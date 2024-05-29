@@ -3,14 +3,14 @@
   hosts: localhost
   gather_facts: no
   vars:
-    namespace: default
+    ns: default
     labels: app in (service2,service3)
     ingress_label: app=service1
     output_dir: /root/microservice-failure-analysis/framework/feature/gearbox/output
   tasks:
     - name: Get Pods with specific labels
       shell: >
-        kubectl get pods -n {{ namespace }} -l "{{ labels }}"
+        kubectl get pods -n {{ ns }} -l "{{ labels }}"
         -o jsonpath='{range .items[*]}{.metadata.name} {.status.hostIP}{"\n"}{end}'
       register: pod_info
       changed_when: false
@@ -22,7 +22,7 @@
 
     - name: Get Pods with ingress label
       shell: >
-        kubectl get pods -n {{ namespace }} -l "{{ ingress_label }}"
+        kubectl get pods -n {{ ns }} -l "{{ ingress_label }}"
         -o jsonpath='{range .items[*]}{.metadata.name} {.status.hostIP}{"\n"}{end}'
       register: ingress_pod_info
       changed_when: false
@@ -118,3 +118,4 @@
         executable: /bin/bash
       when: relevant_ingress_pods | length > 0
       register: ingress_pods_result
+...
