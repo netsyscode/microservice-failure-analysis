@@ -15,9 +15,27 @@
       args:
         executable: /bin/bash
 
-    - name: Run loader-capsule and agent
+    - name: Load Gearbox eBPF kernel program with loader-capsule
       shell: |
         cd /root/microservice-failure-analysis/build/gearbox
-        ./loader-capsule
+        ./loader-capsule > /tmp/loader-capsule.log
       args:
+        executable: /bin/bash
+
+- name: Sync config and run controller
+  hosts: controller
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Sync config to workers
+      copy:
+        src: /root/microservice-failure-analysis/framework/feature/gearbox/config/config.json
+        dest: /root/microservice-failure-analysis/framework/feature/gearbox/config/config.json
+      delegate_to: "{{ item }}"
+      with_items: "{{ groups['workers'] }}"
+
+    - name: Run controller
+      shell: tmux new-session -d -s gearbox_controller 'python3 ./controller.py -f ../config/config.json'
+      args:
+        chdir: /root/microservice-failure-analysis/framework/feature/gearbox/server
         executable: /bin/bash
