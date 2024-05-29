@@ -1,5 +1,6 @@
 import socket
 import threading
+import textwrap
 
 from ctypes import sizeof
 
@@ -15,13 +16,13 @@ def handle_client(conn, addr):
         edge.decode(data)
         if not data:
             break
-        print(f"Received edge: \
-              {edge.trace_id} \
-              {edge.component_id_1} \
-              {edge.invoke_id_1} \
-              {edge.component_id_2} \
-              {edge.invoke_id2} \
-              {edge.num}")
+        print("Received edge:\t"
+            f"{str(edge.trace_id).ljust(24)}"  
+            f"{str(edge.component_id_1).ljust(24)}"
+            f"{str(edge.invoke_id_1).ljust(24)}"
+            f"{str(edge.component_id_2).ljust(24)}"
+            f"{str(edge.invoke_id_2).ljust(24)}"
+            f"{str(edge.num).ljust(24)}")
     conn.close()
 
 def start_server(config: Config):
@@ -30,6 +31,13 @@ def start_server(config: Config):
         s.bind((host, port))
         s.listen()
         print(f'Server is listening on {host}:{port}')
+        print("Received edge:\t"
+            f"{str('Trace ID').ljust(24)}"  
+            f"{str('Component ID 1').ljust(24)}"
+            f"{str('Invoke ID 1').ljust(24)}"
+            f"{str('Component ID 2').ljust(24)}"
+            f"{str('Invoke ID 2').ljust(24)}"
+            f"{str('Edge number').ljust(24)}")
         while True:
             conn, addr = s.accept()
             thread = threading.Thread(target=handle_client, args=(conn, addr))
@@ -37,6 +45,8 @@ def start_server(config: Config):
 
 def main():
     gearbox_config = parse_args()
+    print(str(gearbox_config))
+
     start_server(gearbox_config)
 
 if __name__ == "__main__":
