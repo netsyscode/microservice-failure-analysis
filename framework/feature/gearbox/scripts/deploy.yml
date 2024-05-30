@@ -27,6 +27,11 @@
   become: yes
   gather_facts: no
   tasks:
+    - name: Remove the gearbox controller output file
+      file:
+        path: "/root/microservice-failure-analysis/framework/feature/gearbox/output/raw_data.log"
+        state: absent
+
     - name: Run controller
       shell: tmux new-session -d -s gearbox_controller 'python3 ./controller.py -f ../config/config.json; sleep 10000000000'
       args:
