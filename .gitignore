@@ -1,14 +1,90 @@
-./scripts/sync/
+# Custom directories
+scripts/sync/
 
-**/.DS_Store
+# eBPF 编译生成文件
+*.o
+*.a
+*.so
+*.lo
+*.la
+*.slo
+*.d
+*.dyn
+*.dyno
+*.elf
+*.bc
+*.ll
+*.i
+*.ii
+*.lst
+*.map
+*.map.map
 
-**/build/
-**/output/
+# BPF CO-RE skeleton files
+*.skel.h
 
+# Clang/LLVM intermediate files
+*.ll
+*.bc
+*.d
+*.i
+
+# Common development and configuration files
+.idea/
 .vscode/
+*.swp
+*~
+.DS_Store
 
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.old
+*.pid
+*.seed
+
+# Python bytecode
+__pycache__/
 **/__pycache__/
+*.py[cod]
+*$py.class
 
-./deps/bpftools/bpftools/
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-**/test-data/**
+# Ignore directories with build artifacts
+build/
+**/build/
+output/
+**/output/
+test-data/
+**/test-data/
+dist/
+**/dist/
+out/
+**/out/
+bin/
+**/bin/
+obj/
+**/obj/
+
+# Ignore specific tools or custom extensions
+*.patch
+*.diff
+*.patches
+*.diffs
+*.rej
+*.orig
+
+# Ignore system files
+Thumbs.db
+Desktop.ini
+
+# Ignore system swap files
+*.swp

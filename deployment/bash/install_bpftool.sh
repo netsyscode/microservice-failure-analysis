@@ -13,6 +13,7 @@ create_symbolic_link() {
         rm -r ../../deps/bpftools/bpftools/libbpf/ || { echo "Failed to remove old libbpf directory."; exit 1; }
     fi
     ln -s $(realpath ../../deps/libbpf/libbpf/) $(realpath ../../deps/bpftools/bpftools) || { echo "Failed to create symbolic link for libbpf."; exit 1; }
+    git config submodule.deps/bpftools/bpftools.ignore all
 }
 
 build_and_install() {
