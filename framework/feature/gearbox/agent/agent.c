@@ -82,7 +82,9 @@ int run(ConfigData *config, struct ring_buffer **rb) {
             fprintf(stdout, "Interrupted, exiting gearbox agent\n");
             ret = 0;
             break;
-        } else {
+        }
+        
+        if (ret < 0) {
             fprintf(stderr, "Error polling ring buffer: %s\n", strerror(errno));
             break;
         }
