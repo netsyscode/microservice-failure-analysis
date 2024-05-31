@@ -73,6 +73,19 @@ kubectl get pvc local-hostpath-pvc
 kubectl get pv <pvc-name> -o yaml
 ```
 
+**IMPORTANT**: Set the default storage class:
+
+```
+kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
+------
+References:
+
+- https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/
+- https://github.com/radondb/radondb-mysql-kubernetes/issues/524
+------
+
 ### Cleanup
 
 ```bash
