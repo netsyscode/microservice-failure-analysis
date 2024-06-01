@@ -73,10 +73,10 @@ kubectl get pvc local-hostpath-pvc
 kubectl get pv <pvc-name> -o yaml
 ```
 
-**IMPORTANT**: Set the default storage class:
+**Note**: Maybe need to untaint control node:
 
 ```
-kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+kubectl taint nodes <control-node> node-role.kubernetes.io/control-plane:NoSchedule-
 ```
 
 ------
@@ -91,4 +91,10 @@ References:
 ```bash
 kubectl delete -f local-hostpath-pod.yaml
 kubectl delete -f local-hostpath-pvc.yaml
+```
+
+## Uninstall
+
+```bash
+kubectl delete -f https://openebs.github.io/charts/openebs-operator.yaml
 ```
