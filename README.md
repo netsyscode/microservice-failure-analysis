@@ -8,9 +8,9 @@ A cluster with more than 3 nodes, each with `python` and [ansible](https://www.a
 
 ### Installation
 
+Clone this repo under `/home/<main-user-name>` at `<main-user-name>@<main-host-ip>`.
 Modify [inventory.ini] to specify the IP, username, password, proxy port, etc. of the cluster. 
-
-Install microservice-failure-analysis platform with ansible:
+Then, install microservice-failure-analysis platform with ansible:
 
 ```bash
 ansible-playbook ./deployment/ansible/main.yaml

@@ -1,0 +1,19 @@
+---
+- name: Ensure repo is updated on workers
+  hosts: workers
+  become: no  # 使用root权限执行
+  gather_facts: no  # 不收集主机信息
+  tasks:
+    - name: Install git incase it is not installed
+      apt:
+        name: git
+        state: latest
+
+    - name: Pull the latest update from feature/gearbox
+      git:
+        repo: 'https://github.com/netsyscode/microservice-failure-analysis'
+        dest: "/home/{{ ansible_user }}/microservice-failure-analysis"
+        version: 'feature/gearbox'
+        force: yes
+        update: yes  # 拉取最新的代码
+...
