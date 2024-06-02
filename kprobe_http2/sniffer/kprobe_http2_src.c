@@ -222,25 +222,31 @@ static inline __attribute__((__always_inline__)) void process_syscall_close(stru
     conn_info_map.delete(&tgid_fd);
 }
 
-static inline __attribute__((__always_inline__)) bool is_http_connection(struct conn_info_t* conn_info, const char* buf, size_t count) {
+static inline __attribute__((__always_inline__)) bool is_http2_connection(struct conn_info_t* conn_info, const char* buf, size_t count) {
     // If the connection was already identified as HTTP connection, no need to re-check it.
     if (conn_info->is_http) {
         return true;
     }
 
-    // The minimum length of http request or response.
-    if (count < 16) {
+    // The minimum length of a single frame
+    if (count < 9) {
         return false;
     }
 
     bool res = false;
-    if (buf[0] == 'H' && buf[1] == 'T' && buf[2] == 'T' && buf[3] == 'P') {
+    // if (buf[0] == 'H' && buf[1] == 'T' && buf[2] == 'T' && buf[3] == 'P') {
+    //     res = true;
+    // }
+    // if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T') {
+    //     res = true;
+    // }
+    // if (buf[0] == 'P' && buf[1] == 'O' && buf[2] == 'S' && buf[3] == 'T') {
+    //     res = true;
+    // }
+    if (buf[3] <= 9){
         res = true;
     }
-    if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T') {
-        res = true;
-    }
-    if (buf[0] == 'P' && buf[1] == 'O' && buf[2] == 'S' && buf[3] == 'T') {
+    if (buf[0] == 'P' && buf[1] == 'R' && buf[2] == 'I') {
         res = true;
     }
 
@@ -335,8 +341,8 @@ static inline __attribute__((__always_inline__)) void process_data(struct pt_reg
     }
 
     // Check if the connection is already HTTP, or check if that's a new connection, check protocol and return true if that's HTTP.
-    // if (is_http_connection(conn_info, args->buf, bytes_count)) {
-    if (true) {
+    if (is_http2_connection(conn_info, args->buf, bytes_count)) {
+    // if (true) {
         // allocate new event.
         uint32_t kZero = 0;
         struct socket_data_event_t* event = socket_data_event_buffer_heap.lookup(&kZero);
