@@ -24,6 +24,11 @@
         http_proxy: "{{ proxy }}"
         https_proxy: "{{ proxy }}"
 
+- name: Ensure submodule is updated on all nodes
+  hosts: all
+  become: no
+  gather_facts: no
+  tasks:
     - name: Update git submodules
       command: git submodule update --init
       args:

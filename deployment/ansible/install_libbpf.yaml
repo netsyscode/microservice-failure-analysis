@@ -1,0 +1,76 @@
+---
+- name: Install libbpf on all nodes
+  hosts: all
+  become: true
+  gather_facts: yes
+  tasks:
+    - name: Check required kernel configurations
+      command: grep -E "{{ item }}" /boot/config-{{ ansible_kernel }}
+      with_items:
+        - CONFIG_BPF=y
+        - CONFIG_BPF_SYSCALL=y
+      register: result
+      ignore_errors: yes
+
+    - name: Install common libraries
+      apt:
+        name:
+          - libelf1
+          - libelf-dev
+          - zlib1g-dev
+          - gcc-multilib
+          - wget
+          - build-essential
+          - lsb-release
+          - software-properties-common
+          - gnupg
+        state: present
+
+    - name: Download LLVM installation script
+      get_url:
+        url: https://apt.llvm.org/llvm.sh
+        dest: /tmp/llvm.sh
+        mode: '0755'
+
+    - name: Install LLVM and related tools
+      shell: /bin/bash /tmp/llvm.sh 14
+      args:
+        executable: /bin/bash
+
+    - name: Create symbolic links for LLVM tools
+      file:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        state: link
+        force: yes
+      with_items:
+        - { src: "/usr/bin/clang-14", dest: "/usr/bin/clang" }
+        - { src: "/usr/bin/clang++-14", dest: "/usr/bin/clang++" }
+        - { src: "/usr/bin/llc-14", dest: "/usr/bin/llc" }
+        - { src: "/usr/bin/opt-14", dest: "/usr/bin/opt" }
+        - { src: "/usr/bin/llvm-dis-14", dest: "/usr/bin/llvm-dis" }
+        - { src: "/usr/bin/llvm-objdump-14", dest: "/usr/bin/llvm-objdump" }
+        - { src: "/usr/bin/llvm-config-14", dest: "/usr/bin/llvm-config" }
+        - { src: "/usr/bin/llvm-strip-14", dest: "/usr/bin/llvm-strip" }
+        - { src: "/usr/include/llvm-c-14/llvm-c", dest: "/usr/include/llvm-c" }
+        - { src: "/usr/include/llvm-14/llvm", dest: "/usr/include/llvm" }
+
+    - name: Install libbpf
+      shell: make && make install
+      args:
+        chdir: /home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf/src
+        executable: /bin/bash
+
+    - name: Check libbpf installation
+      stat:
+        path: /usr/lib64/libbpf.so
+      register: libbpf_check
+
+    - name: Fail if libbpf is not installed
+      fail:
+        msg: "libbpf.so not found in /usr/lib64"
+      when: not libbpf_check.stat.exists
+
+    - name: Verify libbpf installation
+      debug:
+        msg: "libbpf installed successfully."
