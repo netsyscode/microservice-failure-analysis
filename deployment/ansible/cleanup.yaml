@@ -1,0 +1,8 @@
+---
+- name: Cleanup k8s cluster
+  hosts: controller
+  become: no
+  gather_facts: no
+  tasks:
+    - name: Clear k8s
+      shell: echo y | sealos reset

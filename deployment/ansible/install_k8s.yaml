@@ -1,0 +1,90 @@
+---
+- name: Install containerd at every node of the cluster
+  hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install containerd
+      apt:
+        name: containerd
+        state: present
+
+- name: Download and install sealos
+  hosts: controller
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Download sealos
+      get_url:
+        url: https://github.com/labring/sealos/releases/download/v4.3.7/sealos_4.3.7_linux_amd64.tar.gz
+        dest: /tmp/sealos_4.3.7_linux_amd64.tar.gz
+      environment:
+        http_proxy: "{{ hostvars['main']['proxy'] }}"
+        https_proxy: "{{ hostvars['main']['proxy'] }}"
+
+    - name: Extract sealos
+      unarchive:
+        src: /tmp/sealos_4.3.7_linux_amd64.tar.gz
+        dest: /tmp/
+        creates: /tmp/sealos
+
+    - name: Ensure sealos is executable
+      file:
+        path: /tmp/sealos
+        mode: '0755'
+        state: file
+
+    - name: Move sealos to /usr/bin
+      command: mv /tmp/sealos /usr/bin/sealos
+
+    - name: Install package uidmap
+      apt:
+        name: uidmap
+        state: present
+
+    - name: Install package fuse-overlayfs
+      apt:
+        name: fuse-overlayfs
+        state: present
+
+- name: Install kubernetes via sealos
+  hosts: controller
+  become: no
+  gather_facts: no
+  tasks:
+    - name: Set sealos command
+      set_fact:
+        sealos_command: |
+          sealos run labring/kubernetes:v1.27.7 labring/helm:v3.9.4 labring/calico:v3.24.1 \
+          --masters {{ hostvars['main']['ansible_host'] }} \
+          --nodes {% for host in groups['workers'] %}{{ hostvars[host]['ansible_host'] }}{% if not loop.last %},{% endif %}{% endfor %} \
+          -p {{ hostvars['main']['ansible_become_pass'] }} \
+          --user {{ hostvars['main']['ansible_user'] }}
+
+    - name: Debug sealos command
+      debug:
+        msg: "{{ sealos_command }}"
+
+    - name: Run sealos command
+      shell: "{{ sealos_command }}"
+      environment:
+        http_proxy: "{{ hostvars['main']['proxy'] }}"
+        https_proxy: "{{ hostvars['main']['proxy'] }}"
+
+- name: Install kubernetes via sealos
+  hosts: controller
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Ensure /etc/kubernetes/admin.conf is readable by all users
+      file:
+        path: /etc/kubernetes/admin.conf
+        owner: root
+        group: root
+        mode: '0644'
+        state: file
+...

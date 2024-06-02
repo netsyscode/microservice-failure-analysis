@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Set hostname for this cluster
+      hostname:
+        name: "{{ inventory_hostname }}"
+    
+    - name: Add hosts to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[item]['ansible_host'] }} {{ item }}"
+      loop: "{{ groups['all'] }}"
+...
