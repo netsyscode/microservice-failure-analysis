@@ -16,4 +16,23 @@
         version: 'feature/gearbox'
         force: yes
         update: yes  # 拉取最新的代码
+      register: git_result
+      until: git_result is succeeded
+      retries: 5
+      delay: 10
+      environment:
+        http_proxy: "{{ proxy }}"
+        https_proxy: "{{ proxy }}"
+
+    - name: Update git submodules
+      command: git submodule update --init
+      args:
+        chdir: "/home/{{ ansible_user }}/microservice-failure-analysis"
+      register: submodule_result
+      until: submodule_result is succeeded
+      retries: 5
+      delay: 10
+      environment:
+        http_proxy: "{{ proxy }}"
+        https_proxy: "{{ proxy }}"
 ...

@@ -1,7 +1,7 @@
 ---
 - import_playbook: set_env.yaml
 - import_playbook: install_k8s.yaml
-# - import_playbook: update_submodules.yml
+- import_playbook: update_repo.yaml
 # - import_playbook: install_libbpf.yml
 # - import_playbook: install_bpftool.yml
 # - import_playbook: install_cjson.yml
