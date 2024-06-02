@@ -1,0 +1,50 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Set hostname for master
+      hostname:
+        name: master
+      when: "'master' in inventory_hostname"
+
+    - name: Set hostname for slaves
+      hostname:
+        name: "{{ inventory_hostname }}"
+      when: "'slave' in inventory_hostname"
+    
+    - name: Add hosts to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[item]['ansible_host'] }} {{ item }}"
+      loop: "{{ groups['all'] }}"
+    
+    - name: Install containerd
+      shell: |
+        apt-get install -y containerd
+
+- hosts: master
+  become: yes
+  tasks:
+    - name: Download and install sealos
+      shell: |
+        wget https://github.com/labring/sealos/releases/download/v4.3.7/sealos_4.3.7_linux_amd64.tar.gz &&
+        tar zxvf sealos_4.3.7_linux_amd64.tar.gz sealos && 
+        chmod +x sealos && mv sealos /usr/bin
+      args:
+        chdir: /tmp
+      environment:
+        http_proxy: "{{ hostvars['master']['proxy'] }}"
+        https_proxy: "{{ hostvars['master']['proxy'] }}"
+  
+    - name: install k8s and helm
+      shell: |
+        sealos run labring/kubernetes:v1.27.7 labring/helm:v3.9.4 labring/calico:v3.24.1 \
+        --masters {{ hostvars['master']['ansible_host'] }} \
+        --nodes {{ hostvars['slave1']['ansible_host'] }},{{ hostvars['slave2']['ansible_host'] }} \
+        -p {{ hostvars['master']['ansible_become_pass'] }} \
+        --user {{ hostvars['master']['ansible_user'] }}
+      environment:
+        http_proxy: "{{ hostvars['master']['proxy'] }}"
+        https_proxy: "{{ hostvars['master']['proxy'] }}"
+
+

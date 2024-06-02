@@ -1,0 +1,7 @@
+---
+- hosts: master
+  become: yes
+  tasks:
+    - name: Clear k8s
+      shell: |
+        echo y | sudo sealos reset
