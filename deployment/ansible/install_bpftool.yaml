@@ -10,6 +10,34 @@
           - libcap-dev
         state: present
 
+    - name: Reset submodule to clean state
+      shell: git reset --hard HEAD
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+      register: reset_result
+
+    - name: Clean untracked files and directories
+      shell: git clean -fdx
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+      register: clean_result
+
+    - name: Checkout specific version v7.2.0
+      command: git checkout tags/v7.2.0
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+      register: checkout_result
+
+    - name: Verify bpftool version
+      command: git describe --tags
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+      register: bpftool_version
+
+    - name: Print the checked out version
+      debug:
+        msg: "Checked out bpftool version: {{ bpftool_version.stdout }}"
+
     - name: Check if old libbpf directory exists
       stat:
         path: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools/libbpf"
@@ -27,22 +55,6 @@
         dest: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools/libbpf"
         state: link
         force: yes
-
-    - name: Checkout specific version v7.2.0
-      command: git checkout tags/v7.2.0
-      args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
-      register: checkout_result
-
-    - name: Verify bpftool version
-      command: git describe --tags
-      args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
-      register: bpftool_version
-
-    - name: Print the checked out version
-      debug:
-        msg: "Checked out bpftool version: {{ bpftool_version.stdout }}"
 
     - name: Build bpftool
       shell: make && make install

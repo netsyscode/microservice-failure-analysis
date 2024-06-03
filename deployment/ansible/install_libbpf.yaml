@@ -55,6 +55,18 @@
         - { src: "/usr/include/llvm-c-14/llvm-c", dest: "/usr/include/llvm-c" }
         - { src: "/usr/include/llvm-14/llvm", dest: "/usr/include/llvm" }
 
+    - name: Reset submodule to clean state
+      shell: git reset --hard HEAD
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+      register: reset_result
+
+    - name: Clean untracked files and directories
+      shell: git clean -fdx
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+      register: clean_result
+      
     - name: Checkout specific version v1.2.0
       command: git checkout tags/v1.2.0
       args:
