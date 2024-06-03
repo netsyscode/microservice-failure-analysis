@@ -55,6 +55,22 @@
         - { src: "/usr/include/llvm-c-14/llvm-c", dest: "/usr/include/llvm-c" }
         - { src: "/usr/include/llvm-14/llvm", dest: "/usr/include/llvm" }
 
+    - name: Checkout specific version v1.2.0
+      command: git checkout tags/v1.2.0
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+      register: checkout_result
+
+    - name: Verify libbpf version
+      command: git describe --tags
+      args:
+        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+      register: libbpf_version
+
+    - name: Print the checked out version
+      debug:
+        msg: "Checked out libbpf version: {{ libbpf_version.stdout }}"
+
     - name: Install libbpf
       shell: make && make install
       args:
