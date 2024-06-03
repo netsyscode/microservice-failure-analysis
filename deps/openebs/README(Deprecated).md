@@ -2,11 +2,14 @@
 
 Even though OpenEBS has been upgraded to 4.x version, this README installs 2.12.x for simplicity and compatibility for Train-Ticket.
 
+## Presequisites
+
+- [helm 3.2 or more](../helm/README.md)
+
 ## Installation
 
 ```bash
-# Under root dir of this repo
-ansible-playbook ./deployment/ansible/install_openebs.yaml
+kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml
 ```
 
 ## Verifying OpenEBS installation
@@ -14,15 +17,22 @@ ansible-playbook ./deployment/ansible/install_openebs.yaml
 List the pods in `<openebs>` namespace with `kubectl get pods -n openebs`:
 
 ```
-NAME                                           READY   STATUS    RESTARTS   AGE
-openebs-localpv-provisioner-6b4f46dd8c-pdcck   1/1     Running   0          63s
+NAME                                            READY   STATUS    RESTARTS   AGE
+openebs-localpv-provisioner-6787b599b9-nhh95    1/1     Running   0          3m5s
+openebs-ndm-cluster-exporter-7bfd5746f4-k5xng   1/1     Running   0          3m5s
+openebs-ndm-k2xmr                               1/1     Running   0          3m5s
+openebs-ndm-node-exporter-hjhn4                 1/1     Running   0          3m5s
+openebs-ndm-node-exporter-lx8vz                 1/1     Running   0          3m5s
+openebs-ndm-operator-845b8858db-qwprc           1/1     Running   0          3m5s
+openebs-ndm-rw2b6                               1/1     Running   0          3m5s
 ```
 
 Verify StorageClasses with `kubectl get sc`:
 
 ```
-NAME                         PROVISIONER        RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-openebs-hostpath (default)   openebs.io/local   Delete          WaitForFirstConsumer   false                  45s
+NAME               PROVISIONER        RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+openebs-device     openebs.io/local   Delete          WaitForFirstConsumer   false                  3m32s
+openebs-hostpath   openebs.io/local   Delete          WaitForFirstConsumer   false                  3m32s
 ```
 
 ## Test by deploying an application

@@ -1,0 +1,18 @@
+- name: Install OpenEBS via sealos
+  hosts: controller
+  become: no
+  gather_facts: no
+  tasks:
+    - name: Set sealos command
+      set_fact:
+        sealos_command: sealos run labring/openebs:v3.9.0
+
+    - name: Debug sealos command
+      debug:
+        msg: "{{ sealos_command }}"
+
+    - name: Run sealos command
+      shell: "{{ sealos_command }}"
+      environment:
+        http_proxy: "{{ hostvars['main']['proxy'] }}"
+        https_proxy: "{{ hostvars['main']['proxy'] }}"
