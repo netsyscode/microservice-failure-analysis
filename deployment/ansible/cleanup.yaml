@@ -1,7 +1,7 @@
 ---
 - name: Cleanup k8s cluster
   hosts: controller
-  become: no
+  become: yes
   gather_facts: no
   tasks:
     - name: Clear k8s

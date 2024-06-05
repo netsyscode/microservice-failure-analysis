@@ -50,7 +50,7 @@ worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY
 ## Playbook Descriptions
 
 - **set_env.yaml**: Configures environment variables
-- **install_k8s.yaml**: Installs Kubernetes (v1.27.14) with Flannel (v0.19.2) and Helm (v3.13.2)
+- **install_k8s.yaml**: Installs Sealos (v4.3.7), Kubernetes (v1.24.17) with Flannel (v0.19.2), and Helm (v3.13.2)
 - **update_repo.yaml**: Updates and syncs this github repository to worker nodes
 - **install_libbpf.yaml**: Installs LibBPF (v1.2.0)
 - **install_bpftool.yaml**: Installs BPFTool (v7.2.0)

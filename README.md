@@ -24,8 +24,9 @@ For detailed instructions, see [Detailed Deployment and Installation Instruction
 This repo is tested deployable and runnable with 
 
 - Ansible v2.16.7
-- Python 3.10.12
-- Kubernetes v1.27.14 with 
+- Python v3.10.12
+- Sealos v4.3.7
+- Kubernetes v1.24.17 with 
   - Flannel v0.19.2
 - Helm v3.13.2
 

@@ -60,7 +60,7 @@
     - name: Set sealos command
       set_fact:
         sealos_command: |
-          sealos run labring/kubernetes:v1.27.14 labring/helm:v3.13.2 labring/flannel:v0.19.2 \
+          sealos run labring/kubernetes:v1.24.17 labring/helm:v3.13.2 labring/flannel:v0.19.2 \
           --masters {{ hostvars['main']['ansible_host'] }} \
           --nodes {% for host in groups['workers'] %}{{ hostvars[host]['ansible_host'] }}{% if not loop.last %},{% endif %}{% endfor %} \
           --pk '{{ hostvars['main']['ssh_key'] }}' \
