@@ -101,7 +101,9 @@ func ParseHTTP2Bytes(hexInput string) {
 				// Format and append to the buffer
 				buffer.WriteString(fmt.Sprintf("(%s, %s)", name, value))
 			}
-			fmt.Println("Header data: [", buffer.String(), "]")
+            result := fmt.Sprintf("Stream ID %d:", frameStreamID)
+            // fmt.Println(result)
+			fmt.Println(result, "Header data: [", buffer.String(), "]")
 
         case 0x2:
             fmt.Println("PRIORITY frame")
