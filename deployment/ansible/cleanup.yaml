@@ -6,3 +6,15 @@
   tasks:
     - name: Clear k8s
       shell: echo y | sealos reset
+
+- name: Cleanup microservice repo
+  hosts: workers
+  become: no
+  gather_facts: no
+  vars_files:
+    - shared_vars.yaml
+  tasks:
+    - name: Remove the repo
+      file:
+        path: "{{ base_dir }}"
+        state: absent

@@ -29,8 +29,8 @@ Your [`inventory.ini`](../deployment/ansible/inventory.ini) file should look lik
 main ansible_host=CONTROLLER_HOST ansible_user=CONTROLLER_USER ssh_key=CONTROLLER_SSH_KEY proxy=CONTROLLER_PROXY
 
 [workers]
-worker1 ansible_host=WORKER1_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY
-worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY
+worker1 ansible_host=WORKER1_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY proxy=WORKER1_PROXY
+worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY proxy=WORKER2_PROXY
 ```
 
 ## Main Playbook

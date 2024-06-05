@@ -3,6 +3,8 @@
   hosts: all
   become: true
   gather_facts: yes
+  vars_files:
+    - shared_vars.yaml
   tasks:
     - name: Check required kernel configurations
       command: grep -E "{{ item }}" /boot/config-{{ ansible_kernel }}
@@ -58,25 +60,25 @@
     - name: Reset submodule to clean state
       shell: git reset --hard HEAD
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+        chdir: "{{ base_dir }}/deps/libbpf/libbpf"
       register: reset_result
 
     - name: Clean untracked files and directories
       shell: git clean -fdx
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+        chdir: "{{ base_dir }}/deps/libbpf/libbpf"
       register: clean_result
       
     - name: Checkout specific version v1.2.0
       command: git checkout tags/v1.2.0
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+        chdir: "{{ base_dir }}/deps/libbpf/libbpf"
       register: checkout_result
 
     - name: Verify libbpf version
       command: git describe --tags
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf'
+        chdir: "{{ base_dir }}/deps/libbpf/libbpf"
       register: libbpf_version
 
     - name: Print the checked out version
@@ -86,7 +88,7 @@
     - name: Install libbpf
       shell: make && make install
       args:
-        chdir: /home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf/src
+        chdir: "{{ base_dir }}/deps/libbpf/libbpf/src" 
         executable: /bin/bash
 
     - name: Check libbpf installation

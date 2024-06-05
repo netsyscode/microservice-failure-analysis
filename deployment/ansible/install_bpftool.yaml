@@ -2,6 +2,8 @@
   hosts: all
   become: yes
   gather_facts: no
+  vars_files:
+    - shared_vars.yaml
   tasks:
     - name: Install dependencies for bpftools
       apt:
@@ -13,25 +15,25 @@
     - name: Reset submodule to clean state
       shell: git reset --hard HEAD
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+        chdir: "{{ base_dir }}/deps/bpftools/bpftools"
       register: reset_result
 
     - name: Clean untracked files and directories
       shell: git clean -fdx
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+        chdir: "{{ base_dir }}/deps/bpftools/bpftools"
       register: clean_result
 
     - name: Checkout specific version v7.2.0
       command: git checkout tags/v7.2.0
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+        chdir: "{{ base_dir }}/deps/bpftools/bpftools"
       register: checkout_result
 
     - name: Verify bpftool version
       command: git describe --tags
       args:
-        chdir: '/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools'
+        chdir: "{{ base_dir }}/deps/bpftools/bpftools"
       register: bpftool_version
 
     - name: Print the checked out version
@@ -40,26 +42,26 @@
 
     - name: Check if old libbpf directory exists
       stat:
-        path: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools/libbpf"
+        path: "{{ base_dir }}/deps/bpftools/bpftools/libbpf"
       register: old_libbpf_dir
 
     - name: Remove old libbpf directory if it exists
       file:
-        path: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools/libbpf"
+        path: "{{ base_dir }}/deps/bpftools/bpftools/libbpf"
         state: absent
       when: old_libbpf_dir.stat.exists
 
     - name: Create symbolic link for libbpf
       file:
-        src: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/libbpf/libbpf"
-        dest: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools/libbpf"
+        src: "{{ base_dir }}/deps/libbpf/libbpf"
+        dest: "{{ base_dir }}/deps/bpftools/bpftools/libbpf"
         state: link
         force: yes
 
     - name: Build bpftool
       shell: make && make install
       args:
-        chdir: "/home/{{ ansible_user }}/microservice-failure-analysis/deps/bpftools/bpftools/src"
+        chdir: "{{ base_dir }}/deps/bpftools/bpftools/src"
         executable: /bin/bash
 
     - name: Check bpftool installation

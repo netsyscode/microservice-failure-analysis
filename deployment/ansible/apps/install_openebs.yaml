@@ -5,7 +5,7 @@
   tasks:
     - name: Set sealos command
       set_fact:
-        sealos_command: sealos run labring/openebs:v3.9.0
+        sealos_command: sealos run labring/openebs:v3.10.0
 
     - name: Debug sealos command
       debug:
