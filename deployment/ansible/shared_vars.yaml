@@ -1,0 +1,7 @@
+# shared_vars.yml
+base_dir: >
+  {%- if ansible_user_id == 'root' -%}
+  /root/microservice-failure-analysis
+  {%- else -%}
+  /home/{{ ansible_user }}/microservice-failure-analysis
+  {%- endif -%}

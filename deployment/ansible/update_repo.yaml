@@ -3,6 +3,8 @@
   hosts: workers
   become: no  # 使用root权限执行
   gather_facts: no  # 不收集主机信息
+  vars_files:
+    - shared_vars.yml
   tasks:
     - name: Install git incase it is not installed
       apt:
@@ -12,7 +14,7 @@
     - name: Pull the latest update from feature/gearbox
       git:
         repo: 'https://github.com/netsyscode/microservice-failure-analysis'
-        dest: "/home/{{ ansible_user }}/microservice-failure-analysis"
+        dest: "{{ base_dir }}"
         version: 'feature/gearbox'
         force: yes
         update: yes  # 拉取最新的代码
@@ -28,11 +30,13 @@
   hosts: all
   become: no
   gather_facts: no
+  vars_files:
+    - shared_vars.yml
   tasks:
     - name: Update git submodules
       command: git submodule update --init
       args:
-        chdir: "/home/{{ ansible_user }}/microservice-failure-analysis"
+        chdir: "{{ base_dir }}"
       register: submodule_result
       until: submodule_result is succeeded
       retries: 5

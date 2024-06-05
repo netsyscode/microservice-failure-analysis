@@ -54,34 +54,24 @@
 
 - name: Install kubernetes via sealos
   hosts: controller
-  become: yes
+  become: no
   gather_facts: no
   tasks:
     - name: Set sealos command
       set_fact:
         sealos_command: |
-          sealos run labring/kubernetes:v1.27.14 labring/helm:v3.13.2 labring/flannel:v0.19.2 \
+          sealos run labring/kubernetes:v1.27.7 labring/helm:v3.9.4 labring/calico:v3.24.1 \
           --masters {{ hostvars['main']['ansible_host'] }} \
           --nodes {% for host in groups['workers'] %}{{ hostvars[host]['ansible_host'] }}{% if not loop.last %},{% endif %}{% endfor %} \
-          --pk '{{ hostvars['main']['ssh_key'] }}' \
+          --passwd {{ hostvars['main']['ansible_become_pass'] }} \
           --user {{ hostvars['main']['ansible_user'] }}
 
     - name: Debug sealos command
       debug:
         msg: "{{ sealos_command }}"
 
-    - name: Check current user
-      command: whoami
-      register: whoami_output
-
-    - name: Debug current user
-      debug:
-        msg: "Current user is {{ whoami_output.stdout }}"
-        
     - name: Run sealos command
       shell: "{{ sealos_command }}"
-      args:
-        executable: /bin/bash
       environment:
         http_proxy: "{{ hostvars['main']['proxy'] }}"
         https_proxy: "{{ hostvars['main']['proxy'] }}"
