@@ -1,4 +1,15 @@
 ---
+- name: Ensure v2ray service is stopped and disabled
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Stop v2ray service
+      service:
+        name: v2ray
+        state: stopped
+        enabled: no
+
 - name: Cleanup HTTP proxy configuration for containerd
   hosts: workers
   become: true
