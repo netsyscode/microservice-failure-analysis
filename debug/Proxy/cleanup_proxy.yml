@@ -1,0 +1,18 @@
+---
+- name: Cleanup HTTP proxy configuration for containerd
+  hosts: workers
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Remove http-proxy.conf file
+      file:
+        path: /etc/systemd/system/containerd.service.d/http-proxy.conf
+        state: absent
+
+    - name: Reload systemd manager configuration
+      command: systemctl daemon-reload
+
+    - name: Restart containerd service
+      service:
+        name: containerd
+        state: restarted

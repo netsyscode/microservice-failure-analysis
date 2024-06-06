@@ -8,15 +8,16 @@ The deployment scripts are under `./deployment/ansible/`, including
 
 ```
 ./deployment/ansible/
+├── apps/
 ├── cleanup.yaml
 ├── install_bpftool.yaml
 ├── install_k8s.yaml
 ├── install_libbpf.yaml
-├── install_openebs.yaml
 ├── inventory.ini
 ├── main.yaml
 ├── README.md
 ├── set_env.yaml
+├── shared_vars.yaml
 └── update_repo.yaml
 ```
 
@@ -26,11 +27,11 @@ Your [`inventory.ini`](../deployment/ansible/inventory.ini) file should look lik
 
 ```ini
 [controller]
-main ansible_host=CONTROLLER_HOST ansible_user=CONTROLLER_USER ssh_key=CONTROLLER_SSH_KEY proxy=CONTROLLER_PROXY
+main ansible_host=CONTROLLER_HOST ansible_user=CONTROLLER_USER ansible_become_pass=USER_PASSWD ssh_key=CONTROLLER_SSH_KEY proxy=CONTROLLER_PROXY
 
 [workers]
-worker1 ansible_host=WORKER1_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY proxy=WORKER1_PROXY
-worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY proxy=WORKER2_PROXY
+worker1 ansible_host=WORKER1_HOST ansible_user=WORKER_USER ansible_become_pass=USER_PASSWD proxy=WORKER1_PROXY
+worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER ansible_become_pass=USER_PASSWD proxy=WORKER2_PROXY
 ```
 
 ## Main Playbook
@@ -54,7 +55,6 @@ worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY pr
 - **update_repo.yaml**: Updates and syncs this github repository to worker nodes
 - **install_libbpf.yaml**: Installs LibBPF (v1.2.0)
 - **install_bpftool.yaml**: Installs BPFTool (v7.2.0)
-- **install_openebs.yaml**: Installs OpenEBS (v3.9.0)
 - **cleanup.yaml**: Cleanup script
 
 ## Usage
@@ -64,6 +64,14 @@ worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER proxy=WORKER_PROXY pr
     ```sh
     ansible-playbook ./deployment/ansible/main.yaml
     ```
+
+### Cleanup
+
+To cleanup most of the installed env:
+
+```sh
+ansible-playbook ./deployment/ansible/main.yaml
+```
 
 ## Notes
 

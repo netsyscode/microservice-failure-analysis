@@ -4,12 +4,74 @@
   become: yes
   gather_facts: no
   tasks:
-    - name: Clear k8s
-      shell: echo y | sealos reset
+    - name: Set sealos command
+      set_fact:
+        sealos_command: |
+          echo y | sealos reset \
+          --masters {{ hostvars['main']['ansible_host'] }} \
+          --nodes {% for host in groups['workers'] %}{{ hostvars[host]['ansible_host'] }}{% if not loop.last %},{% endif %}{% endfor %} \
+          --pk '{{ hostvars['main']['ssh_key'] }}' \
+          --passwd '{{ hostvars['main']['ansible_become_pass'] }}' \
+          --user {{ hostvars['main']['ansible_user'] }}
+
+    - name: Debug sealos command
+      debug:
+        msg: "{{ sealos_command }}"
+
+    - name: Run sealos command
+      shell: "{{ sealos_command }}"
+      args:
+        executable: /bin/bash
+      ignore_errors: true
+
+- name: Clean up CNI configuration and iptables
+  hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Kubeadm reset
+      shell: echo y | kubeadm reset
+      ignore_errors: true
+
+    - name: Remove CNI configuration directory
+      file:
+        path: /etc/cni/net.d
+        state: absent
+        force: true
+
+    - name: Remove Flannel CNI data
+      file:
+        path: /var/lib/cni/flannel
+        state: absent
+        force: true
+
+    - name: Delete flannel.1 network interface
+      command: ip link delete flannel.1
+      ignore_errors: true
+      
+    - name: Delete cni0 network interface
+      command: ip link delete cni0
+      ignore_errors: true
+
+    - name: Remove cni0 network data
+      file:
+        path: /var/lib/cni/networks/cni0
+        state: absent
+        force: true
+
+    - name: Flush all iptables rules
+      iptables:
+        flush: yes
+        table: filter
+
+    - name: Flush all iptables nat rules
+      iptables:
+        flush: yes
+        table: nat
 
 - name: Cleanup microservice repo
   hosts: workers
-  become: no
+  become: yes
   gather_facts: no
   vars_files:
     - shared_vars.yaml

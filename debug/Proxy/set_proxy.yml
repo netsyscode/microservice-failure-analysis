@@ -1,0 +1,33 @@
+---
+- name: Configure HTTP proxy for containerd
+  hosts: workers
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Create directory for containerd service override
+      file:
+        path: /etc/systemd/system/containerd.service.d
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Configure HTTP proxy for containerd
+      copy:
+        dest: /etc/systemd/system/containerd.service.d/http-proxy.conf
+        content: |
+          [Service]
+          Environment="HTTP_PROXY=http://127.0.0.1:18080/"
+          Environment="HTTPS_PROXY=http://127.0.0.1:18080/"
+          Environment="NO_PROXY=localhost,127.0.0.1"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Reload systemd manager configuration
+      command: systemctl daemon-reload
+
+    - name: Restart containerd service
+      service:
+        name: containerd
+        state: restarted
