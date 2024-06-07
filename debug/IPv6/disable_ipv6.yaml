@@ -1,0 +1,57 @@
+---
+- name: Disable IPv6
+  hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Disable IPv6 for all interfaces in sysctl
+      lineinfile:
+        path: /etc/sysctl.conf
+        state: present
+        regexp: '^net.ipv6.conf.all.disable_ipv6'
+        line: 'net.ipv6.conf.all.disable_ipv6 = 1'
+        validate: 'sysctl -p %s'
+      # Disable IPv6 for all interfaces in sysctl.conf
+
+    - name: Disable IPv6 for default interface in sysctl
+      lineinfile:
+        path: /etc/sysctl.conf
+        state: present
+        regexp: '^net.ipv6.conf.default.disable_ipv6'
+        line: 'net.ipv6.conf.default.disable_ipv6 = 1'
+        validate: 'sysctl -p %s'
+      # Disable IPv6 for default interface in sysctl.conf
+
+    - name: Disable IPv6 on the loopback interface
+      lineinfile:
+        path: /etc/sysctl.conf
+        state: present
+        regexp: '^net.ipv6.conf.lo.disable_ipv6'
+        line: 'net.ipv6.conf.lo.disable_ipv6 = 1'
+        validate: 'sysctl -p %s'
+      # Disable IPv6 on the loopback interface in sysctl.conf
+
+    - name: Apply sysctl changes
+      command: sysctl -p
+      # Apply sysctl changes
+
+    - name: Ensure IPv6 is disabled on runtime
+      sysctl:
+        name: net.ipv6.conf.all.disable_ipv6
+        value: '1'
+        state: present
+      # Ensure IPv6 is disabled on all interfaces at runtime
+
+    - name: Ensure IPv6 is disabled on default interface at runtime
+      sysctl:
+        name: net.ipv6.conf.default.disable_ipv6
+        value: '1'
+        state: present
+      # Ensure IPv6 is disabled on default interface at runtime
+
+    - name: Ensure IPv6 is disabled on loopback interface at runtime
+      sysctl:
+        name: net.ipv6.conf.lo.disable_ipv6
+        value: '1'
+        state: present
+      # Ensure IPv6 is disabled on loopback interface at runtime
