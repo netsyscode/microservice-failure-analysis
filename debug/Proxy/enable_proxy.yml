@@ -1,0 +1,12 @@
+---
+- name: Ensure v2ray service is started and enabled
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Start v2ray service
+      service:
+        name: v2ray
+        state: started
+        enabled: yes
+...
