@@ -1,0 +1,46 @@
+---
+- name: Change default DNS and output current DNS (systemd-resolved)
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure systemd-resolved is enabled and started
+      systemd:
+        name: systemd-resolved
+        enabled: yes
+        state: started
+      # Ensure systemd-resolved is enabled and started
+
+    - name: Configure DNS servers
+      copy:
+        content: |
+          [Resolve]
+          DNS=114.114.114.114 8.8.8.8 101.6.6.6 166.111.8.28
+          FallbackDNS=
+        dest: /etc/systemd/resolved.conf
+        owner: root
+        group: root
+        mode: '0644'
+      # Configure DNS servers in systemd-resolved
+
+    - name: Restart systemd-resolved to apply changes
+      systemd:
+        name: systemd-resolved
+        state: restarted
+      # Restart systemd-resolved to apply changes
+
+    - name: Show current DNS configuration with resolvectl
+      command: resolvectl status
+      register: dns_status
+      # Show the current DNS configuration using resolvectl
+
+    - name: Output current DNS configuration
+      debug:
+        msg: "{{ dns_status.stdout.split('\n') }}"
+      # Output the current DNS configuration
+
+    - name: Ensure /etc/resolv.conf is a symlink pointing to /run/systemd/resolve/resolv.conf
+      file:
+        path: /etc/resolv.conf
+        src: /run/systemd/resolve/resolv.conf
+        state: link
+      # Ensure /etc/resolv.conf is a symlink pointing to /run/systemd/resolve/resolv.conf
