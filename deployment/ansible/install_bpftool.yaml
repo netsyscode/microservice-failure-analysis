@@ -5,6 +5,10 @@
   vars_files:
     - shared_vars.yaml
   tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
     - name: Install dependencies for bpftools
       apt:
         name:

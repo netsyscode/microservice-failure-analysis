@@ -32,14 +32,11 @@
       apt:
         update_cache: yes
 
-    - name: Install package uidmap
+    - name: Install packages
       apt:
-        name: uidmap
-        state: present
-
-    - name: Install package fuse-overlayfs
-      apt:
-        name: fuse-overlayfs
+        name: 
+          - uidmap
+          - fuse-overlayfs
         state: present
 
 - name: Install kubernetes via sealos

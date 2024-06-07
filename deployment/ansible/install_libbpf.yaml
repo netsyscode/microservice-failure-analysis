@@ -14,6 +14,10 @@
       register: result
       ignore_errors: yes
 
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
     - name: Install common libraries
       apt:
         name:

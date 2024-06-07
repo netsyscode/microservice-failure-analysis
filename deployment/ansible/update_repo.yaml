@@ -6,6 +6,10 @@
   vars_files:
     - shared_vars.yaml
   tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
     - name: Install git incase it is not installed
       apt:
         name: git
