@@ -1,5 +1,6 @@
 # Custom directories
 scripts/sync/
+application-demos/Train-Ticket/train-ticket/
 
 # eBPF 编译生成文件
 *.o

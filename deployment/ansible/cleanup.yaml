@@ -2,7 +2,7 @@
 - name: Cleanup k8s cluster
   hosts: controller
   become: yes
-  gather_facts: no
+  gather_facts: yes
   tasks:
     - name: Set sealos command
       set_fact:
@@ -23,6 +23,16 @@
       args:
         executable: /bin/bash
       ignore_errors: true
+
+    - name: Remove .kube/config file
+      file:
+        path: "{{ ansible_env.HOME }}/.kube/config"
+        state: absent
+
+    - name: Remove .kube directory if empty
+      file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: absent
 
 - name: Clean up CNI configuration and iptables
   hosts: all
@@ -80,3 +90,16 @@
       file:
         path: "{{ base_dir }}"
         state: absent
+
+- name: Cleanup and apply sysctl settings
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove lines containing # sealos from /etc/sysctl.conf
+      lineinfile:
+        path: /etc/sysctl.conf
+        state: absent
+        regexp: '.*# sealos$'
+
+    - name: Apply sysctl changes
+      command: sysctl -p

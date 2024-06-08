@@ -1,6 +1,6 @@
 ---
 - name: Configure HTTP proxy for containerd
-  hosts: workers
+  hosts: all
   become: true
   gather_facts: false
   tasks:

@@ -1,11 +1,11 @@
 - name: Install OpenEBS via sealos
   hosts: controller
-  become: no
+  become: yes
   gather_facts: no
   tasks:
     - name: Set sealos command
       set_fact:
-        sealos_command: sealos run labring/openebs:v3.10.0
+        sealos_command: echo y | sealos run labring/openebs:v3.10.0
 
     - name: Debug sealos command
       debug:

@@ -1,0 +1,30 @@
+---
+- name: Deploy Train Ticket Application
+  hosts: controller
+  gather_facts: no
+  vars_files:
+    - ../shared_vars.yaml
+  tasks:
+    - name: Replace MySQL configuration in values.yaml
+      replace:
+        path: "{{ base_dir }}/application-demos/Train-Ticket/train-ticket/deployment/kubernetes-manifests/quickstart-k8s/charts/mysql/values.yaml"
+        regexp: 'configFiles:\n    node.cnf: \|\n      \[mysqld\]\n      default_storage_engine=InnoDB\n      max_connections=65535'
+        replace: 'configFiles:\n    node.cnf: |\n      [mysqld]\n      bind-address = 0.0.0.0\n      default_storage_engine=InnoDB\n      max_connections=65535'
+
+    - name: Replace MySQL replicas in values.yaml
+      replace:
+        path: "{{ base_dir }}/application-demos/Train-Ticket/train-ticket/deployment/kubernetes-manifests/quickstart-k8s/charts/mysql/values.yaml"
+        regexp: 'replicaCount: 3'
+        replace: 'replicaCount: 1'
+
+    - name: Replace Nacos replicas in values.yaml
+      replace:
+        path: "{{ base_dir }}/application-demos/Train-Ticket/train-ticket/deployment/kubernetes-manifests/quickstart-k8s/charts/nacos/values.yaml"
+        regexp: 'replicaCount: 3'
+        replace: 'replicaCount: 1'
+    # - name: Change to application directory and make deploy
+    #   become: no
+    #   shell: make deploy DeployArgs="--all"
+    #   args:
+    #     chdir: "{{ base_dir }}/application-demos/Train-Ticket/train-ticket"
+...

@@ -1,6 +1,6 @@
 ---
 - name: Cleanup HTTP proxy configuration for containerd
-  hosts: workers
+  hosts: all
   become: true
   gather_facts: false
   tasks:

@@ -1,0 +1,29 @@
+---
+- name: Manage node taints in Kubernetes
+  hosts: controller
+  gather_facts: no
+  tasks:
+    - name: Get existing taints for controller node before changes
+      shell: kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.taints[*]}{.key}{"="}{.value}{":NoSchedule,"}{end}{"\n"}{end}'
+      register: taints_before
+      changed_when: false
+
+    - name: Display taints before changes
+      debug:
+        msg: "Taints before changes: {{ taints_before.stdout }}"
+
+    - name: Remove taint "NoSchedule" from controller node
+      shell: |
+        kubectl taint nodes main node-role.kubernetes.io/control-plane:NoSchedule-
+        kubectl taint nodes main node-role.kubernetes.io/master:NoSchedule-
+      ignore_errors: true
+
+    - name: Get existing taints for controller node after changes
+      shell: kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{range .spec.taints[*]}{.key}{"="}{.value}{":NoSchedule,"}{end}{"\n"}{end}'
+      register: taints_after
+      changed_when: false
+
+    - name: Display taints after changes
+      debug:
+        msg: "Taints after changes: {{ taints_after.stdout }}"
+...

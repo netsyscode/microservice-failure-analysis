@@ -47,9 +47,9 @@
     - name: Set sealos command
       set_fact:
         sealos_command: |
-          sealos run registry.cn-shanghai.aliyuncs.com/labring/kubernetes:v1.24.17 \
-          registry.cn-shanghai.aliyuncs.com/labring/helm:v3.13.2 \
-          registry.cn-shanghai.aliyuncs.com/labring/flannel:v0.19.2 \
+          sealos run labring/kubernetes:v1.24.17 \
+          labring/helm:v3.13.2 \
+          labring/flannel:v0.19.2 \
           --masters {{ hostvars['main']['ansible_host'] }} \
           --nodes {% for host in groups['workers'] %}{{ hostvars[host]['ansible_host'] }}{% if not loop.last %},{% endif %}{% endfor %} \
           --pk '{{ hostvars['main']['ssh_key'] }}' \
@@ -76,16 +76,51 @@
         http_proxy: "{{ hostvars['main']['proxy'] }}"
         https_proxy: "{{ hostvars['main']['proxy'] }}"
 
-- name: Install kubernetes via sealos
+- name: Expose kubernetes to all users
   hosts: controller
-  become: yes
-  gather_facts: no
+  gather_facts: yes
   tasks:
     - name: Ensure /etc/kubernetes/admin.conf is readable by all users
+      become: yes
       file:
         path: /etc/kubernetes/admin.conf
         owner: root
         group: root
-        mode: '0644'
+        mode: '0666'
         state: file
+
+    - name: Ensure .kube directory exists
+      become: no
+      file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+
+    - name: Copy Kubernetes admin.conf to .kube/config
+      become: yes
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        remote_src: yes
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        mode: '0666'
+
+    - name: Print ansible_env.HOME
+      become: yes
+      debug:
+        msg: "The HOME directory is: {{ ansible_env.HOME }}"
+
+    - name: Print ansible_user_id
+      become: yes
+      debug:
+        msg: "The user ID is: {{ ansible_user_id }}"
+
+- name: Ensure kubernetes python library is installed
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install kubernetes library via pip
+      pip:
+        name: kubernetes
+        executable: pip3
 ...

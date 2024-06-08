@@ -1,10 +1,8 @@
 ---
-- name: Ensure repo is updated on workers
+- name: Update git with apt
   hosts: workers
-  become: no  # 使用root权限执行
+  become: yes  # 使用root权限执行
   gather_facts: no  # 不收集主机信息
-  vars_files:
-    - shared_vars.yaml
   tasks:
     - name: Update apt cache
       apt:
@@ -15,6 +13,13 @@
         name: git
         state: latest
 
+- name: Ensure repo is updated on workers
+  hosts: workers
+  become: no 
+  gather_facts: no  # 不收集主机信息
+  vars_files:
+    - shared_vars.yaml
+  tasks:
     - name: Pull the latest update from feature/gearbox
       git:
         repo: 'https://github.com/netsyscode/microservice-failure-analysis'

@@ -54,5 +54,13 @@
         dest: /etc/apt/sources.list
         owner: root
         group: root
-        mode: '0644'
+        mode: '0666'
+
+- name: Update Ubuntu apt sources list
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 ...
