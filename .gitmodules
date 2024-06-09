@@ -16,3 +16,6 @@
 [submodule "application-demos/Train-Ticket/train-ticket-auto-query"]
 	path = application-demos/Train-Ticket/train-ticket-auto-query
 	url = https://github.com/FudanSELab/train-ticket-auto-query.git
+[submodule "application-demos/DeathStarBench"]
+	path = application-demos/DeathStarBench
+	url = https://github.com/delimitrou/DeathStarBench.git
