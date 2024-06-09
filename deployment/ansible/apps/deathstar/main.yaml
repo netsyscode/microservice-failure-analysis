@@ -1,0 +1,41 @@
+---
+- name: Helm Install DeathStar based on parameter
+  hosts: controller
+  gather_facts: no
+  vars_files:
+    - ../../shared_vars.yaml
+  vars:
+    helm_parameters:
+      hotelReservation: "{{ base_dir }}/application-demos/DeathStarBench/hotelReservation/helm-chart/hotelreservation/"
+      mediaMicroservices: "{{ base_dir }}/application-demos/DeathStarBench/mediaMicroservices/helm-chart/mediamicroservices/"
+      socialNetwork: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/helm-chart/socialnetwork/"
+
+  tasks:
+    - name: Check if parameter is provided
+      fail:
+        msg: "You must provide a valid parameter: a, b, or c"
+      when: "'{{ ds_type }}' not in helm_parameters"
+
+    - name: Set helm chart directory
+      set_fact:
+        chart_dir: "{{ helm_parameters[ds_type] }}"
+
+    - name: Debug the helm chart directory
+      debug:
+        msg: "Helm chart directory is {{ chart_dir }}"
+
+    - name: Set sealos command
+      set_fact:
+        helm_command: helm install {{ ds_type }} {{ helm_parameters[ds_type] }}
+    
+    - name: Debug helm command
+      debug:
+        msg: "{{ helm_command }}"
+
+    - name: Install Helm chart
+      command: "{{ helm_command }}"
+      register: helm_install_result
+
+    - name: Display Helm install results
+      debug:
+        var: helm_install_result.stdout

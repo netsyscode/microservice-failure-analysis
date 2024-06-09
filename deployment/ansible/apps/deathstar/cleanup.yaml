@@ -1,0 +1,31 @@
+---
+- name: Cleanup Helm installations
+  hosts: controller
+  gather_facts: no
+  tasks:
+    - name: Attempt to uninstall hotelReservation Helm release
+      command: helm uninstall hotelReservation
+      ignore_errors: yes
+      register: hotelReservation_uninstall_result
+
+    - name: Debug hotelReservation Helm uninstall result
+      debug:
+        var: hotelReservation_uninstall_result
+
+    - name: Attempt to uninstall mediaMicroservices Helm release
+      command: helm uninstall mediaMicroservices
+      ignore_errors: yes
+      register: mediaMicroservices_uninstall_result
+
+    - name: Debug mediaMicroservices Helm uninstall result
+      debug:
+        var: mediaMicroservices_uninstall_result
+
+    - name: Attempt to uninstall socialNetwork Helm release
+      command: helm uninstall socialNetwork
+      ignore_errors: yes
+      register: socialNetwork_uninstall_result
+
+    - name: Debug socialNetwork Helm uninstall result
+      debug:
+        var: socialNetwork_uninstall_result
