@@ -9,6 +9,7 @@ The deployment scripts are under `./deployment/ansible/`, including
 ```
 ./deployment/ansible/
 ├── apps/
+├── tools/
 ├── cleanup.yaml
 ├── install_bpftool.yaml
 ├── install_k8s.yaml
@@ -47,6 +48,14 @@ worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER ansible_become_pass=U
 - import_playbook: install_bpftool.yaml
 ...
 ```
+
+### Optional Installation
+
+We also provide: 
+
+- **apps/train-ticket/main.yaml**: Install application demo [Train Ticket](https://github.com/FudanSELab/train-ticket)
+- **apps/deathstar/\***: Install application demo [DeathStarBench](https://github.com/delimitrou/DeathStarBench/)
+- **tools/chaosmesh.yaml**: Installs Chaos Mesh (v2.6.3)
 
 ## Playbook Descriptions
 

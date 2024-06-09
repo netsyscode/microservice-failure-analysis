@@ -1,0 +1,25 @@
+---
+- name: Cleanup Chaos Mesh deployment
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Uninstall Chaos Mesh using Helm
+      command: helm uninstall chaos-mesh -n chaos-mesh
+      register: helm_uninstall_result
+      changed_when: "'\"release\"' in helm_uninstall_result.stdout and 'uninstalled' in helm_uninstall_result.stdout"
+      ignore_errors: true
+
+    - name: Delete namespace for Chaos Mesh
+      command: kubectl delete ns chaos-mesh
+      register: delete_ns_result
+      changed_when: "'\"deleted\"' in delete_ns_result.stdout"
+      ignore_errors: true
+
+    - name: Display uninstall results
+      debug:
+        var: helm_uninstall_result.stdout
+
+    - name: Display namespace deletion results
+      debug:
+        var: delete_ns_result.stdout

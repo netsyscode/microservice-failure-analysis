@@ -1,0 +1,35 @@
+---
+- name: Deploy Chaos Mesh using Helm and kubectl
+  hosts: controller
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Add Chaos Mesh Helm repository
+      command: helm repo add chaos-mesh https://charts.chaos-mesh.org
+      register: helm_repo_add_result
+      changed_when: "'\"has been added to your repositories\"' in helm_repo_add_result.stdout"
+
+    - name: Update Helm repositories
+      command: helm repo update
+      when: helm_repo_add_result.changed
+
+    - name: Search Chaos Mesh in Helm repository
+      command: helm search repo chaos-mesh
+      register: helm_search_result
+      ignore_errors: true
+
+    - name: Create namespace for Chaos Mesh
+      command: kubectl create ns chaos-mesh
+      ignore_errors: true
+ 
+    - name: Install Chaos Mesh using Helm
+      command: > 
+        helm install chaos-mesh chaos-mesh/chaos-mesh
+        -n=chaos-mesh
+        --set chaosDaemon.runtime=containerd
+        --set chaosDaemon.socketPath=/run/containerd/containerd.sock
+        --version 2.6.3
+
+    - name: Display search results
+      debug:
+        var: helm_search_result.stdout
