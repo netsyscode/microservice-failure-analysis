@@ -3,7 +3,7 @@
   hosts: controller
   gather_facts: no
   vars_files:
-    - ../shared_vars.yaml
+    - ../../shared_vars.yaml
   tasks:
     - name: Replace MySQL configuration in values.yaml
       replace:

@@ -49,22 +49,14 @@ worker2 ansible_host=WORKER2_HOST ansible_user=WORKER_USER ansible_become_pass=U
 ...
 ```
 
-### Optional Installation
-
-We also provide: 
-
-- **apps/train-ticket/main.yaml**: Install application demo [Train Ticket](https://github.com/FudanSELab/train-ticket)
-- **apps/deathstar/\***: Install application demo [DeathStarBench](https://github.com/delimitrou/DeathStarBench/)
-- **tools/chaosmesh.yaml**: Installs Chaos Mesh (v2.6.3)
-
 ## Playbook Descriptions
 
-- **set_env.yaml**: Configures environment variables
-- **install_k8s.yaml**: Installs Sealos (v4.3.7), Kubernetes (v1.24.17) with Flannel (v0.19.2), and Helm (v3.13.2)
-- **update_repo.yaml**: Updates and syncs this github repository to worker nodes
-- **install_libbpf.yaml**: Installs LibBPF (v1.2.0)
-- **install_bpftool.yaml**: Installs BPFTool (v7.2.0)
-- **cleanup.yaml**: Cleanup script
+- **set_env.yaml**: Configures environment variables.
+- **install_k8s.yaml**: Installs Sealos (v4.3.7), Kubernetes (v1.24.17) with Flannel (v0.19.2), and Helm (v3.13.2).
+- **update_repo.yaml**: Updates and syncs this github repository to worker nodes.
+- **install_libbpf.yaml**: Installs LibBPF (v1.2.0).
+- **install_bpftool.yaml**: Installs BPFTool (v7.2.0).
+- **cleanup.yaml**: Cleanup the kubernetes cluster.
 
 ## Usage
 
@@ -73,14 +65,29 @@ We also provide:
     ```sh
     ansible-playbook ./deployment/ansible/main.yaml
     ```
+3. Cleanup with
+    ```sh
+    ansible-playbook ./deployment/ansible/cleanup.yaml
+    ```
 
-### Cleanup
+### Advanced Installation
 
-To cleanup most of the installed env:
+We also provide: 
 
-```sh
-ansible-playbook ./deployment/ansible/main.yaml
-```
+- **apps/train-ticket/main.yaml**: Install application demo [Train Ticket](https://github.com/FudanSELab/train-ticket).
+  - For cleanups, use **apps/train-ticket/cleanup.yaml**.
+- **apps/deathstar/main.yaml**: Install application demo [DeathStarBench](https://github.com/delimitrou/DeathStarBench/).
+  - For hotelReservation, run with `-e "ds_type=hotelReservation"`.
+  - For mediaMicroservices, run with `-e "ds_type=mediaMicroservices"`.
+  - For socialNetwork, run with `-e "ds_type=socialNetwork"`.
+  - For cleanups, use **apps/deathstar/main.yaml**.
+- **tools/chaosmesh.yaml**: Installs [Chaos Mesh (v2.6.3)](https://chaos-mesh.org/docs/production-installation-using-helm/).
+  - For cleanups, use **tools/cleanup_chaosmesh.yaml**.
+
+**Notes for advanced installation:**
+
+1. If not specified, all ansible scripts should be run under the root dir of this repo (for ansible to obtain the [ansible.cfg](../ansible.cfg)).
+2. If not specified, no parameters are required.
 
 ## Notes
 
