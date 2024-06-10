@@ -1,0 +1,135 @@
+---
+- name: Register Users and Construct Social Graphs
+  hosts: controller
+  vars_files:
+    - ../../shared_vars.yaml
+  vars:
+    docker_image: social-network-init:latest
+    timestamp: "{{ ansible_date_time.iso8601_basic }}"
+    build_dir_base: "{{ base_dir }}/docker_build"
+    build_subdir_name: "DeathStar-init-{{ timestamp }}"
+    build_subdir: "{{ build_dir_base }}/{{ build_subdir_name }}"
+    graph_options:
+      s: "socfb-Reed98"
+      m: "ego-twitter"
+      l: "soc-twitter-follows-mun"
+
+  tasks:
+    - name: Ensure build base directory exists
+      file:
+        path: "{{ build_dir_base }}"
+        state: directory
+
+    - name: Create unique build subdir
+      file:
+        path: "{{ build_subdir }}"
+        state: directory
+
+    - name: Copy application files to unique build directory
+      copy:
+        src: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/scripts/"
+        dest: "{{ build_subdir }}"
+        mode: "0755"
+      
+    - name: Copy node files to unique build directory
+      copy:
+        src: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/datasets/"
+        dest: "{{ build_subdir }}/datasets/"
+        mode: "0755"
+
+    - name: Copy Dockerfile to unique build directory
+      copy:
+        src: Dockerfile.init
+        dest: "{{ build_subdir }}/Dockerfile"
+        mode: "0755"
+
+    - name: Set sealos command
+      set_fact:
+        sealos_command: sealos build -t "{{ docker_image }}" "{{ build_subdir }}"
+
+    - name: Debug sealos command
+      debug:
+        msg: "{{ sealos_command }}"
+
+    - name: Build Docker image using sealos
+      shell: "{{ sealos_command }}"
+      args:
+        executable: /bin/bash
+      # environment:
+      #   http_proxy: "{{ hostvars['main']['proxy'] }}"
+      #   https_proxy: "{{ hostvars['main']['proxy'] }}"
+      register: build_output
+
+    - debug: 
+        msg: "Docker build output: {{ build_output.stdout }}"
+
+    - name: Delete build subdir
+      file:
+        path: "{{ build_subdir }}"
+        state: absent
+
+    - name: Log into sealos local registry
+      shell: sealos login -u admin -p passw0rd sealos.hub:5000
+      ignore_errors: yes
+
+    - name: Push Docker image to local registry
+      shell: sealos push localhost/social-network-init sealos.hub:5000/social-network-init
+
+    - name: Get nginx-thrift service IP
+      command: kubectl get svc nginx-thrift -o jsonpath='{.spec.clusterIP}'
+      register: nginx_thrift_ip
+
+    - debug:
+        msg: "Nginx-thrift service IP: {{ nginx_thrift_ip.stdout }}"
+
+    - name: Validate graph option
+      fail:
+        msg: "Invalid graph option. Must be one of s, m, l."
+      when: graph not in graph_options
+
+    - name: Create Kubernetes Job with TTL
+      shell: |
+        kubectl apply -f - <<EOF
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: init-social-graph
+        spec:
+          ttlSecondsAfterFinished: 60
+          template:
+            spec:
+              containers:
+              - name: social-network-init
+                image: sealos.hub:5000/social-network-init:latest
+                command: ["python3", "init_social_graph.py", "--ip", "{{ nginx_thrift_ip.stdout }}", "--graph", "{{ graph_options[graph] }}"]
+              restartPolicy: Never
+        EOF
+      register: create_job_output
+      
+    - name: Print job creation output
+      debug:
+        var: create_job_output.stdout
+
+    - name: Wait for the job to complete
+      command: kubectl wait --for=condition=complete --timeout=600s job/init-social-graph
+      register: wait_job_output
+
+    - name: Print job wait output
+      debug:
+        var: wait_job_output.stdout
+
+    - name: Get Job Pod name
+      command: kubectl get pods --selector=job-name=init-social-graph --output=jsonpath='{.items[0].metadata.name}'
+      register: pod_name
+
+    - name: Print Pod name
+      debug:
+        var: pod_name.stdout
+
+    - name: Get Job logs
+      command: kubectl logs {{ pod_name.stdout }}
+      register: job_logs
+
+    - name: Print job logs
+      debug:
+        var: job_logs.stdout

@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+
+WORKDIR /scripts
+
+COPY . /scripts
+
+RUN pip install aiohttp
+
+CMD ["python3", "init_social_graph.py"]

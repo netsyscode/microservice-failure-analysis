@@ -1,6 +1,8 @@
 # Custom directories
 scripts/sync/
 application-demos/Train-Ticket/train-ticket/
+docker_build/
+**/docker_build/
 
 # eBPF 编译生成文件
 *.o

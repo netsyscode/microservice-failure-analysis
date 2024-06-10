@@ -116,9 +116,14 @@
         msg: "The user ID is: {{ ansible_user_id }}"
 
 - name: Ensure kubernetes python library is installed
-  hosts: all
+  hosts: controller
   become: yes
   tasks:
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        state: present
+
     - name: Install kubernetes library via pip
       pip:
         name: kubernetes
