@@ -70,14 +70,13 @@
         force: true
 
     - name: Flush all iptables rules
-      iptables:
-        flush: yes
-        table: filter
-
-    - name: Flush all iptables nat rules
-      iptables:
-        flush: yes
-        table: nat
+      shell: |
+        iptables -F;
+        iptables -X;
+        iptables -t nat -F;
+        iptables -t nat -X;
+        iptables -t mangle -F;
+        iptables -t mangle -X;
 
 - name: Cleanup microservice repo
   hosts: workers
