@@ -6,9 +6,9 @@
     - ../../shared_vars.yaml
   vars:
     helm_parameters:
-      hotelReservation: "{{ base_dir }}/application-demos/DeathStarBench/hotelReservation/helm-chart/hotelreservation/"
-      mediaMicroservices: "{{ base_dir }}/application-demos/DeathStarBench/mediaMicroservices/helm-chart/mediamicroservices/"
-      socialNetwork: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/helm-chart/socialnetwork/"
+      hotel: "{{ base_dir }}/application-demos/DeathStarBench/hotelReservation/helm-chart/hotelreservation/"
+      media: "{{ base_dir }}/application-demos/DeathStarBench/mediaMicroservices/helm-chart/mediamicroservices/"
+      social: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/helm-chart/socialnetwork/"
 
   tasks:
     - name: Check if parameter is provided

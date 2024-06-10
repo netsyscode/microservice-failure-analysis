@@ -77,9 +77,9 @@ We also provide:
 - **apps/train-ticket/main.yaml**: Install application demo [Train Ticket](https://github.com/FudanSELab/train-ticket).
   - For cleanups, use **apps/train-ticket/cleanup.yaml**.
 - **apps/deathstar/main.yaml**: Install application demo [DeathStarBench](https://github.com/delimitrou/DeathStarBench/).
-  - For hotelReservation, run with `-e "ds_type=hotelReservation"`.
-  - For mediaMicroservices, run with `-e "ds_type=mediaMicroservices"`.
-  - For socialNetwork, run with `-e "ds_type=socialNetwork"`.
+  - For hotelReservation, run with `-e "ds_type=hotel"`.
+  - For mediaMicroservices, run with `-e "ds_type=media"`.
+  - For socialNetwork, run with `-e "ds_type=social"`.
   - For cleanups, use **apps/deathstar/main.yaml**.
 - **tools/chaosmesh.yaml**: Installs [Chaos Mesh (v2.6.3)](https://chaos-mesh.org/docs/production-installation-using-helm/).
   - For cleanups, use **tools/cleanup_chaosmesh.yaml**.
