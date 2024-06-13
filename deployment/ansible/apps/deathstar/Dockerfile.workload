@@ -1,0 +1,25 @@
+FROM alpine:latest
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+
+RUN apk update \
+    && apk add wget openssl-dev zlib-dev lua5.4 lua5.4-dev luajit build-base ca-certificates \
+    && update-ca-certificates
+
+RUN echo "nameserver 8.8.8.8" >> /etc/resolv.conf && \
+    echo "nameserver 114.114.114.114" >> /etc/resolv.conf
+    
+COPY . /
+
+WORKDIR /
+RUN tar zxpf luarocks-3.11.1.tar.gz
+
+WORKDIR /luarocks-3.11.1
+RUN ./configure && make && make install
+RUN echo -e "nameserver 8.8.8.8\nnameserver 114.114.114.114" > /etc/resolv.conf && \
+    luarocks install luasocket
+
+WORKDIR /wrk2
+RUN make
+
+CMD [ "sleep", "infinity" ]

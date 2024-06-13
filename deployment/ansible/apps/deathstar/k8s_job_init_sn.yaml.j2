@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ job_name }}
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      containers:
+      - name: main
+        image: sealos.hub:5000/{{ docker_image }}
+        command: ["python3", "init_social_graph.py", "--ip", "{{ nginx_thrift_ip.stdout }}", "--graph", "{{ graph_options[graph] }}"]
+      restartPolicy: Never

@@ -29,3 +29,11 @@
     - name: Debug socialNetwork Helm uninstall result
       debug:
         var: socialNetwork_uninstall_result["stdout_lines"]
+
+    - name: Attempt to cleanup workload deployment
+      shell: kubectl delete deployment deathstar-workload-job
+      ignore_errors: yes
+    
+    - name: Attempt to cleanup workload job
+      shell: kubectl delete job deathstar-workload-job
+      ignore_errors: yes

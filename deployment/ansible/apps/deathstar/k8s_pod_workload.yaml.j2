@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ job_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ job_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ job_name }}
+    spec:
+      containers:
+      - name: main
+        image: sealos.hub:5000/{{ docker_image }}
+        imagePullPolicy: Always

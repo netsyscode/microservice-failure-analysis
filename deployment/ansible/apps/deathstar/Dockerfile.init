@@ -6,4 +6,4 @@ COPY . /scripts
 
 RUN pip install aiohttp
 
-CMD ["python3", "init_social_graph.py"]
+CMD ["sleep", "infinity"]

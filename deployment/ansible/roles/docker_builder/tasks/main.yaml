@@ -1,0 +1,55 @@
+---
+- name: Ensure build base directory exists
+  file:
+    path: "{{ build_dir_base }}"
+    state: directory
+
+- name: Create unique build subdir
+  file:
+    path: "{{ build_subdir }}"
+    state: directory
+
+- name: Copy specified files to build directory
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items: "{{ files_to_copy }}"
+
+- name: Copy Dockerfile to build directory
+  copy:
+    src: "{{ dockerfile_source }}"
+    dest: "{{ build_subdir }}/Dockerfile"
+    mode: "0755"
+
+- name: Set sealos command
+  set_fact:
+    sealos_command: sealos build -t "{{ docker_image }}" "{{ build_subdir }}"
+
+- name: Debug sealos command
+  debug:
+    msg: "{{ sealos_command }}"
+
+- name: Build Docker image using sealos
+  shell: "{{ sealos_command }}"
+  args:
+    executable:  /bin/bash
+  # environment:
+  #   http_proxy: "{{ hostvars['main']['proxy'] }}"
+  #   https_proxy: "{{ hostvars['main']['proxy'] }}"
+  register: build_output
+
+- debug: 
+    msg: "Docker build output: {{ build_output.stdout }}"
+
+- name: Delete build subdir
+  file:
+    path: "{{ build_subdir }}"
+    state: absent
+
+- name: Log into sealos local registry
+  shell: sealos login -u admin -p passw0rd sealos.hub:5000
+  ignore_errors: yes
+
+- name: Push Docker image to local registry
+  shell: sealos push localhost/{{ docker_image }} sealos.hub:5000/{{ docker_image }}

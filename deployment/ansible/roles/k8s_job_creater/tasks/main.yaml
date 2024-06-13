@@ -1,0 +1,32 @@
+---
+- name: Deploy the job to Kubernetes
+  command: kubectl apply -f {{ job_yaml_path }}
+  register: deploy_output
+
+- name: Print job creation output
+  debug:
+    var: deploy_output.stdout
+
+- name: Wait for the job to complete
+  command: kubectl wait --for=condition=complete --timeout=600s "job/{{ job_name }}"
+  register: wait_job_output
+
+- name: Print job wait output
+  debug:
+    var: wait_job_output.stdout
+
+- name: Get Job Pod name
+  command: kubectl get pods "--selector=job-name={{ job_name }}" --output=jsonpath='{.items[0].metadata.name}'
+  register: pod_name
+
+- name: Print Pod name
+  debug:
+    var: pod_name.stdout
+
+- name: Get Job logs
+  command: kubectl logs {{ pod_name.stdout }}
+  register: job_logs
+
+- name: Print job logs
+  debug:
+    var: job_logs.stdout

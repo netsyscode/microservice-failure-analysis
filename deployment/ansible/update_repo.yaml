@@ -43,7 +43,7 @@
     - shared_vars.yaml
   tasks:
     - name: Update git submodules
-      command: git submodule update --init
+      command: git submodule update --init --recursive
       args:
         chdir: "{{ base_dir }}"
       register: submodule_result

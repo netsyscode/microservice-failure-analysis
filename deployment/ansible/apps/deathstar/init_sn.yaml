@@ -1,0 +1,60 @@
+---
+- name: Register Users and Construct Social Graphs
+  hosts: controller
+  vars_files:
+    - ../../shared_vars.yaml
+  vars:
+    # Options for graph size
+    graph_options:
+      s: "socfb-Reed98"
+      m: "ego-twitter"
+      l: "soc-twitter-follows-mun"
+    # Local vars
+    timestamp: "{{ ansible_date_time.iso8601_basic }}"
+    docker_image: social-network-init:latest
+    job_yaml_path: "/tmp/DeathStar-social-network-init-job.yaml"
+    job_name: social-network-init-job
+
+  tasks:
+    - name: Validate graph option
+      fail:
+        msg: "Invalid graph option. Must be one of s, m, l."
+      when: graph not in graph_options
+
+    - name: Create Docker image
+      include_role:
+        name: ../../roles/docker_builder
+      vars:
+        build_dir_base: "{{ base_dir }}/docker_build"
+        build_subdir_name: "DeathStar-social-network-init-{{ timestamp }}"
+        build_subdir: "{{ build_dir_base }}/{{ build_subdir_name }}"
+        dockerfile_source: Dockerfile.init
+        files_to_copy:
+          - src: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/scripts/"
+            dest: "{{ build_subdir }}"
+            mode: "0755"
+          - src: "{{ base_dir }}/application-demos/DeathStarBench/socialNetwork/datasets/"
+            dest: "{{ build_subdir }}/datasets/"
+            mode: "0755"
+
+    - name: Get nginx-thrift service IP
+      command: kubectl get svc nginx-thrift -o jsonpath='{.spec.clusterIP}'
+      register: nginx_thrift_ip
+
+    - debug:
+        msg: "Nginx-thrift service IP: {{ nginx_thrift_ip.stdout }}"
+
+    - name: Render Kubernetes Job template
+      template:
+        src: k8s_job_init_sn.yaml.j2
+        dest: "{{ job_yaml_path }}" 
+
+    - name: Create Kubernetes init Job
+      include_role:
+        name: ../../roles/k8s_job_creater
+
+    - name: Remove Kubernetes Job template
+      file:
+        path: "{{ job_yaml_path }}"
+        state: absent
+        force: true
