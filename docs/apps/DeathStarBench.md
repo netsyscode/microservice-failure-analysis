@@ -33,6 +33,8 @@ This playbook init the necessary infrastructure to register users and construct 
 
 **Note:** Currently we only support socialNetwork init.
 
+**Note:** Note that when building images in playbook2 and playbook3, you need to pull the `alpine` base image as shown in the [Dockerfile](../../deployment/ansible/apps/deathstar/Dockerfile.workload). This requires configuring a proxy. However, setting a proxy for the `sealos build` command will cause errors in luarocks install and pip install in the [Dockerfile](../../deployment/ansible/apps/deathstar/Dockerfile.workload). It is recommended to first enable the proxy to pull the `alpine` image locally, and then disable the proxy for `sealos build`.
+
 ### Variables
 
 - `graph`: The graph size option provided by the user (one of `s`, `m`, `l`).
