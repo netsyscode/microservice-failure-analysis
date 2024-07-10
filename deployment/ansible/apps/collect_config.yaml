@@ -1,0 +1,7 @@
+target_service: nginx-web-server # Services that must be included in the trace
+lookback: 100m # Lookback time for the trace
+prettyPrint: true # Pretty print the trace json
+limit: 10 # Limit the number of traces
+tracing_service: jaeger # tracing service name
+tracing_port: 16686 # tracing service port
+dest_file: ./traces.json # Destination directory for the trace file

@@ -1,0 +1,38 @@
+---
+- name: Collect traces
+  hosts: controller
+  gather_facts: no
+  vars_files:
+    - ../shared_vars.yaml
+    - ./collect_config.yaml
+  
+  tasks:
+    # - name: Print collect_trace variables
+    #   debug:
+    #     msg: "{{ base_dir }} {{ target_service }}"
+
+    - name: Get the IP of the tracing service
+      command: kubectl get svc {{ tracing_service }} -o jsonpath='{.spec.clusterIP}'
+      register: tracing_ip
+    
+    - name: Print the IP address of tracing
+      debug:
+        msg: "The IP address for the {{ tracing_service }} service is {{ tracing_ip.stdout }}"
+    
+    - name: 
+      set_fact:
+        curl_url: "service={{ target_service }}&lookback={{ lookback }}&prettyPrint={{ prettyPrint }}&limit={{ limit }}"
+    
+    - name: Collect traces of jaeger
+      shell: >
+        curl -s "http://{{ tracing_ip.stdout }}:{{ tracing_port }}/api/traces?{{ curl_url }}" > {{ base_dir }}/{{ dest_file }}
+      args:
+        executable: /bin/bash
+      when: tracing_service == 'jaeger'
+
+    - name: Collect traces of other tracing tools
+      debug:
+        msg: "Todo: Implement for other tracing tools"
+      when: tracing_service != 'jaeger'
+
+
