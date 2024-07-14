@@ -4,6 +4,8 @@
   gather_facts: no
   vars_files:
     - ../../shared_vars.yaml
+  vars:
+    gen_mysql_secret_path: "{{ base_dir }}/application-demos/Train-Ticket/train-ticket/hack/deploy/gen-mysql-secret.sh"
   tasks:
     - name: Replace MySQL configuration in values.yaml
       replace:
@@ -22,6 +24,21 @@
         path: "{{ base_dir }}/application-demos/Train-Ticket/train-ticket/deployment/kubernetes-manifests/quickstart-k8s/charts/nacos/values.yaml"
         regexp: 'replicaCount: 3'
         replace: 'replicaCount: 1'
+    - name: Replace MYSQL conifg in gen-mysql-secret.sh
+      replace:
+        path: "{{ gen_mysql_secret_path }}"
+        regexp: >-
+          \$host: "\$hostVal"\n\s
+          \$port: "3306"\n\s
+          \$database: "\$dbVal"\n\s
+          \$user: "\$userVal"\n\s
+          \$pwd: "\$passVal"\s
+        replace: |
+          $host: "$name"
+            $port: "3306"
+            $database: "ts"
+            $user: "ts"
+            $pwd: "Ts_123456"
     # - name: Change to application directory and make deploy
     #   become: no
     #   shell: make deploy DeployArgs="--all"
