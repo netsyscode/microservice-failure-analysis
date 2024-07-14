@@ -19,4 +19,4 @@ ansible-playbook deployment/ansible/apps/train-ticket/main.yaml
 ### Note
 
 1. Possibly due to insufficient system resources, there may be some SQL pods failing when executing the function `deploy_tt_mysql_each_service` during deployment. If such a situation occurs, add `sleep * `in `deploy_tt_mysql_each_service `to alleviate it.
-2. The current persistent storage part of trainticket has some bugs. If the application generates database content, certain service pods may fail during the next deployment. Clear the persistent storage volume with `kubectl delete pvc --all` before the second deployment and then proceed with the deployment.
+2. The current persistent storage part of trainticket has some [bugs](https://github.com/FudanSELab/train-ticket/issues/257#issuecomment-1437964574). If the application generates database content, certain service pods may fail during the next deployment. Clear the persistent storage volume with `kubectl delete pvc --all` before the second deployment and then proceed with the deployment.
