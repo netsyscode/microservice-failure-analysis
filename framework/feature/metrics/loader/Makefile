@@ -1,0 +1,1 @@
+include $(BPF_INFRA_PATH)/user/loader-capsule/Makefile

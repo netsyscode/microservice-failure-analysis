@@ -1,0 +1,27 @@
+{
+    "instances": [
+        {
+            "HostIP": 168430091,
+            "ServiceID": 0,
+            "ContainerID": 146155393034136,
+            "ProcessID": 2519212,
+            "ComponentID": 0,
+            "k8sLabel": 0,
+            "ServiceType": 0,
+            "EnvironmentType": 1,
+            "ReleaseType": 3,
+            "Versions": 2,
+            "PathID": 0,
+            "SrcIP": 0,
+            "DstIP": 0,
+            "SrcPort": 0,
+            "DstPort": 0,
+            "Protocol": 0,
+            "CliendID": 0,
+            "OperationName": 0,
+            "API": 0,
+            "ObservationPoints": 0,
+            "MonitoringAttributes": 0
+        }
+    ]
+}
