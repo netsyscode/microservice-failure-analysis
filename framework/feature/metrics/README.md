@@ -1,24 +1,24 @@
 # Tags
 
-| Category               | Attributes                                      | Status |
-|------------------------|-------------------------------------------------|--------|
-| **Entity Identifier**  | Host IPs                                        | ✔      |
-|                        | Service IDs                                     | ✘      |
-|                        | Container IDs                                   | ✔      |
-|                        | Process IDs                                     | ✔      |
-|                        | Component IDs                                   | ✘      |
-|                        | Kubernetes Labels                               | ✘      |
-| **Service Annotations**| Service Type: Frontend, Backend, Cache, ...     | ✘      |
-|                        | Environment: Dev, QA, Production                | ✘      |
-|                        | Release: Stable, Canary                         | ✘      |
-|                        | Versions                                        | ✘      |
-| **Request Features**   | Invocation Path                                 | ✘      |
-|                        | Flow tuple                                      | ✔      |
-|                        | Client IDs                                      | ✘      |
-|                        | Operation Names                                 | ✘      |
-|                        | API Endpoints                                   | ✘      |
-| **Monitoring Attributes** | Observation Points                           | ✘      |
-|                        | Monitoring Attributes                           | ✘      |
+| Category               | Attributes                                      | Status | Collected location |
+|------------------------|-------------------------------------------------|--------|------------|
+| **Entity Identifier**  | Host IPs                                        | ✔      |   user       |
+|                        | Service IDs                                     | ✘      |     user       |
+|                        | Container IDs                                   | ✔      |    user        |
+|                        | Process IDs                                     | ✔      |     kernel       |
+|                        | Component IDs                                   | ✘      |   kernel         |
+|                        | Kubernetes Labels                               | ✘      |   user         |
+| **Service Annotations**| Service Type: Frontend, Backend, Cache, ...     | ✘      |   user         |
+|                        | Environment: Dev, QA, Production                | ✘      |  user          |
+|                        | Release: Stable, Canary                         | ✘      |  user          |
+|                        | Versions                                        | ✘      |   user         |
+| **Request Features**   | Invocation Path                                 | ✘      |   kernel         |
+|                        | Flow tuple                                      | ✔      |  kernel          |
+|                        | Client IDs                                      | ✘      |    kernel        |
+|                        | Operation Names                                 | ✘      |   unknown         |
+|                        | API Endpoints                                   | ✘      |    unknown        |
+| **Monitoring Attributes** | Observation Points                           | ✘      |    unknown        |
+|                        | Monitoring Attributes                           | ✘      |   unknown         |
 
 
 
