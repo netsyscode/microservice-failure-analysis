@@ -32,9 +32,9 @@
 | **Caches**             | LLC Misses                                      | ✘      |
 |                        | LLC Hit Rate                                    | ✘      |
 |                        | LLC Occupancy                                   | ✘      |
-| **Memory**             | Memory Usage                                    | ✘      |
+| **Memory**             | Memory Usage                                    | ✔      |
 |                        | Memory Bandwidth                                | ✘      |
-|                        | Page Faults                                     | ✘      |
+|                        | Page Faults                                     | ✔      |
 | **Network**            | TX Bytes                                        | ✔      |
 |                        | RX Bytes                                        | ✔      |
 |                        | Dropped Packets                                 | ✔      |

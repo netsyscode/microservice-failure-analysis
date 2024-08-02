@@ -56,7 +56,12 @@ static inline struct tcp_sock *get_tsk_from_fd(int fd, struct task_struct *task)
 
 static inline void collect_data(u32 tgid, struct tcp_sock *tsk)
 {
-    struct point p = {};
+    // struct point p = {};
+    u32 key = 0;
+    struct point *p = bpf_map_lookup_elem(&percpu_data_map, &key);
+    if (!p) {
+        return;
+    }
 
     struct tag_list *tags = bpf_map_lookup_elem(&pid_tag_map, &tgid);
     if (tags == NULL)
@@ -72,20 +77,31 @@ static inline void collect_data(u32 tgid, struct tcp_sock *tsk)
     u64 bytes_received = BPF_CORE_READ(tsk, bytes_received);
     u64 bytes_sent = BPF_CORE_READ(tsk, bytes_sent);
 
-    p.tags = *tags;
+    struct task_struct *curr_task = (struct task_struct *)bpf_get_current_task();
+
+    // 获取当前进程的内存用量
+    struct mm_struct *mm = BPF_CORE_READ(curr_task, mm);
+
+
+    p->tags = *tags;
 
 
     //可以在内核获取的
-    p.tags.DstIP = skc_daddr;
-    p.tags.SrcIP = skc_saddr;
-    p.tags.SrcPort = sport;
-    p.tags.DstPort = dport;
-    p.tags.Protocol = SOCK_STREAM;
+    p->tags.DstIP = skc_daddr;
+    p->tags.SrcIP = skc_saddr;
+    p->tags.SrcPort = sport;
+    p->tags.DstPort = dport;
+    p->tags.Protocol = SOCK_STREAM;
 
-    p.metrics.RX_Bytes = bytes_sent;
-    p.metrics.TX_Bytes = bytes_received;
+    p->metrics.RX_Bytes = bytes_sent;
+    p->metrics.TX_Bytes = bytes_received;
+    p->metrics.Dropped_Packets = BPF_CORE_READ(tsk, lost);
+    p->metrics.RTT = BPF_CORE_READ(tsk, srtt_us);
+    p->metrics.Retransmissions = BPF_CORE_READ(tsk, retrans_out);
+    p->metrics.Memory_Usage = BPF_CORE_READ(mm, total_vm);
+    p->metrics.Page_Faults = BPF_CORE_READ(curr_task, maj_flt);
 
-    bpf_ringbuf_output(&rb, &p, sizeof(p), 0);
+    bpf_ringbuf_output(&rb, p, sizeof(*p), 0);
 }
 
 static inline void process_enter_send(struct trace_event_raw_sys_enter *ctx, enum syscall_name syscall_name)
