@@ -37,12 +37,13 @@ struct tag_list {
     u32 API;
     u32 ObservationPoints;
     u32 MonitoringAttributes;
+    u32 PmuIndex;
 } __attribute__((packed));
 
 struct metric_list {
     u32 Execution_Duration;
     u32 CPU_Utilization;
-    u32 Instructions_per_Cycle;
+    u32 Instructions;
     u32 LLC_Misses;
     u32 LLC_Hit_Rate;
     u32 LLC_Occupancy;

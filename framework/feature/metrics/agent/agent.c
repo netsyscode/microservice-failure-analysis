@@ -14,6 +14,7 @@
 #define PID_MAP_PATH     "/sys/fs/bpf/metrics/pid_map"
 #define PID_TAGS_MAP_PATH     "/sys/fs/bpf/metrics/pid_tag_map"
 #define RING_BUFFER_PATH            "/sys/fs/bpf/metrics/rb"
+#define PMU_MAP_PATH            "/sys/fs/bpf/metrics/pmu_map"
 char *pid_filter_file = NULL;
 char *tags_config_file = NULL;
 
@@ -69,7 +70,7 @@ int collect_rb(void *ctx, void *data, size_t data_sz) {
     printf("Metric List:\n");
     printf("  Execution_Duration: %u\n", p->metrics.Execution_Duration);
     printf("  CPU_Utilization: %u\n", p->metrics.CPU_Utilization);
-    printf("  Instructions_per_Cycle: %u\n", p->metrics.Instructions_per_Cycle);
+    printf("  Instructions: %u\n", p->metrics.Instructions);
     printf("  LLC_Misses: %u\n", p->metrics.LLC_Misses);
     printf("  LLC_Hit_Rate: %u\n", p->metrics.LLC_Hit_Rate);
     printf("  LLC_Occupancy: %u\n", p->metrics.LLC_Occupancy);
@@ -149,6 +150,8 @@ int main(int argc, char **argv) {
     update_tags_map(tags_config_file, PID_TAGS_MAP_PATH, &tags, &count);
 
     read_pids_and_update_map(pid_filter_file, PID_MAP_PATH);
+
+    update_pmu_map(PMU_MAP_PATH, PID_TAGS_MAP_PATH);
 
     // read_trace_pipe();
 

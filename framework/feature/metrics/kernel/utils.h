@@ -5,6 +5,9 @@
 #include "structs.h"
 #include "maps.h"
 
+static u32 nr_cpus = 24;
+static u32 metric_num = 2;
+
 static inline bool is_filtered_pid(u32 tgid)
 {
     u32 *find_tgid = bpf_map_lookup_elem(&pid_map, &tgid);
@@ -54,12 +57,31 @@ static inline struct tcp_sock *get_tsk_from_fd(int fd, struct task_struct *task)
     return tsk;
 }
 
-static inline void collect_data(u32 tgid, struct tcp_sock *tsk)
+static int get_pmu(u32 pmu_index, u32 metric_id)
+{
+
+    u32 cpu_index = bpf_get_smp_processor_id();
+    u32 key = pmu_index * nr_cpus * metric_num + metric_id * nr_cpus + cpu_index; // 24个cpu
+    // u32 key = metric_id;
+    // u32 key = 0;
+    u64 count;
+    s64 error;
+    bpf_printk("get_pmu: %u cpu: %u\n", key, cpu_index);
+    count = bpf_perf_event_read(&pmu_map, key);
+    bpf_printk("get_pmu count: %llu\n", count);
+    error = (s64)count;
+    if (error <= -2 && error >= -22)
+        return 0;
+    return count;
+}
+
+static inline void collect_data(u32 tgid, struct tcp_sock *tsk, enum syscall_name syscall_name)
 {
     // struct point p = {};
     u32 key = 0;
     struct point *p = bpf_map_lookup_elem(&percpu_data_map, &key);
-    if (!p) {
+    if (!p)
+    {
         return;
     }
 
@@ -82,11 +104,9 @@ static inline void collect_data(u32 tgid, struct tcp_sock *tsk)
     // 获取当前进程的内存用量
     struct mm_struct *mm = BPF_CORE_READ(curr_task, mm);
 
-
     p->tags = *tags;
 
-
-    //可以在内核获取的
+    // 可以在内核获取的
     p->tags.DstIP = skc_daddr;
     p->tags.SrcIP = skc_saddr;
     p->tags.SrcPort = sport;
@@ -100,6 +120,14 @@ static inline void collect_data(u32 tgid, struct tcp_sock *tsk)
     p->metrics.Retransmissions = BPF_CORE_READ(tsk, retrans_out);
     p->metrics.Memory_Usage = BPF_CORE_READ(mm, total_vm);
     p->metrics.Page_Faults = BPF_CORE_READ(curr_task, maj_flt);
+    if (syscall_name <= 4)
+    {
+        p->metrics.Instructions = get_pmu(tags->PmuIndex, 0);
+        p->metrics.LLC_Misses = get_pmu(tags->PmuIndex, 1);
+    }else{
+        p->metrics.Instructions = get_pmu(tags->PmuIndex, 0) - p->metrics.Instructions;
+        p->metrics.LLC_Misses = get_pmu(tags->PmuIndex, 1) - p->metrics.LLC_Misses;
+    }
 
     bpf_ringbuf_output(&rb, p, sizeof(*p), 0);
 }
@@ -125,7 +153,7 @@ static inline void process_enter_send(struct trace_event_raw_sys_enter *ctx, enu
         return;
     }
     bpf_printk("Enter send: %u\n", ctx->args[2]);
-    collect_data(tgid, tsk);
+    collect_data(tgid, tsk, syscall_name);
 }
 
 static inline void process_enter_recv(struct trace_event_raw_sys_enter *ctx, enum syscall_name syscall_name)
@@ -182,7 +210,7 @@ static inline void process_exit_recv(struct trace_event_raw_sys_exit *ctx, enum 
 
     bpf_printk("Exit recv: %u\n", type);
 
-    collect_data(tgid, tsk);
+    collect_data(tgid, tsk, type);
 
     bpf_map_delete_elem(&read_args_map, &tgid);
 }

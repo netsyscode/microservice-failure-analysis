@@ -1,6 +1,8 @@
 #ifndef __AGENT_UTIL_H__
 #define __AGENT_UTIL_H__
 
+#define _GNU_SOURCE
+
 #include <linux/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +13,84 @@
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
 #include <cjson/cJSON.h>
+#include <linux/perf_event.h>
+
+#include <sched.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <sys/syscall.h>
 #include "kernel_structs.h"
+#include "pmu_type.h"
+
+#define MAX_PIDS 1024
+
+// 全局变量，保存PID列表
+static int pid_list[MAX_PIDS];
+static int pid_count = 0;
+static int metric_num = 2;
+
+static inline int
+sys_perf_event_open(struct perf_event_attr *attr,
+                    pid_t pid, int cpu, int group_fd,
+                    unsigned long flags)
+{
+    return syscall(__NR_perf_event_open, attr, pid, cpu,
+                   group_fd, flags);
+}
+
+static void create_event(int map_fd, struct perf_event_attr *attr,
+                         int pmu_index, int metric_id)
+{
+    int i, status, nr_cpus = sysconf(_SC_NPROCESSORS_CONF);
+    // printf("nr_cpus: %d\n", nr_cpus);
+    pid_t pid[nr_cpus];
+    int err = 0;
+    int target_pid = pid_list[pmu_index];
+    
+
+    for (i = 0; i < nr_cpus; i++)
+    {
+        int pmu_fd, error = 0;
+        pmu_fd = sys_perf_event_open(attr, target_pid /*pid*/, i /*cpu*/, -1 /*group_fd*/, 0);
+        // pmu_fd = sys_perf_event_open(attr, target_pid /*pid*/, -1 /*cpu*/, -1 /*group_fd*/, 0);
+        if (pmu_fd < 0)
+        {
+            fprintf(stderr, "sys_perf_event_open failed on CPU %d: %s\n", i, strerror(errno));
+            error = 1;
+            continue;
+        }
+        int key = pmu_index * nr_cpus * metric_num + metric_id * nr_cpus + i;
+        assert(bpf_map_update_elem(map_fd, &key, &pmu_fd, BPF_ANY) == 0);
+        assert(ioctl(pmu_fd, PERF_EVENT_IOC_ENABLE, 0) == 0);
+        // printf("add pmu counter at cpu: %u key: %u\n", i, key);
+    }
+
+}
+
+void update_pmu_map(const char *pmu_map_path, const char *pid_tag_map_path)
+{
+    int map_fd = bpf_obj_get(pmu_map_path);
+    int tag_map_fd = bpf_obj_get(pid_tag_map_path);
+
+    for (int pmu_index = 0; pmu_index < pid_count; pmu_index++)
+    {
+        struct tag_list tag = {};
+        int target_pid = pid_list[pmu_index];
+        if (bpf_map_lookup_elem(tag_map_fd, &target_pid, &tag) != 0)
+        {
+
+            return;
+        }
+        tag.PmuIndex = pmu_index;
+        bpf_map_update_elem(tag_map_fd, &target_pid, &tag, BPF_ANY);
+        
+
+        create_event(map_fd, &attr_ins, pmu_index, 0);
+        create_event(map_fd, &attr_llc_miss, pmu_index, 1);
+    }
+}
 
 void update_tags_map(const char *filename, const char *pid_tag_map_path, struct tag_list **tags, int *count)
 {
@@ -25,7 +104,6 @@ void update_tags_map(const char *filename, const char *pid_tag_map_path, struct 
         ret = -1;
         return;
     }
-
 
     FILE *file = fopen(filename, "r");
     if (!file)
@@ -62,7 +140,6 @@ void update_tags_map(const char *filename, const char *pid_tag_map_path, struct 
     *count = cJSON_GetArraySize(instances);
     *tags = (struct tag_list *)malloc(*count * sizeof(struct tag_list));
 
-
     for (int i = 0; i < *count; i++)
     {
         cJSON *instance = cJSON_GetArrayItem(instances, i);
@@ -95,6 +172,7 @@ void update_tags_map(const char *filename, const char *pid_tag_map_path, struct 
         (*tags)[i].MonitoringAttributes = cJSON_GetObjectItem(instance, "MonitoringAttributes")->valueint;
 
         __u32 pid = (*tags)[i].ProcessID;
+        pid_list[pid_count++] = pid;
         printf("PID: %u %u\n", pid, (*tags)[i].ContainerID);
         if (bpf_map_update_elem(map_fd, &pid, &(*tags)[i], BPF_ANY) != 0)
         {
