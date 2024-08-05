@@ -28,8 +28,8 @@
 |------------------------|-------------------------------------------------|--------|
 | **Execution**          | Execution Duration                              | ✘      |
 |                        | CPU Utilization                                 | ✘      |
-|                        | Instructions per Cycle                          | ✘      |
-| **Caches**             | LLC Misses                                      | ✘      |
+|                        | Instructions                                    | ✔      |
+| **Caches**             | LLC Misses                                      | ✔      |
 |                        | LLC Hit Rate                                    | ✘      |
 |                        | LLC Occupancy                                   | ✘      |
 | **Memory**             | Memory Usage                                    | ✔      |
