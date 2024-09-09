@@ -6,17 +6,23 @@
   hosts: workers
   become: yes
   gather_facts: no
+  vars_files:
+    - ../../../../deployment/ansible/shared_vars.yaml
   tasks:
+    - name: Install cjson
+      shell: "make ; sudo make install"
+      args:
+        chdir: "{{ base_dir }}/deps/cjson/cJSON"
     - name: Compile Gearbox
       shell: make > /tmp/gearbox-build.log
       args:
-        chdir: /root/microservice-failure-analysis/framework/feature/gearbox
+        chdir: "{{ base_dir }}/framework/feature/gearbox"
         executable: /bin/bash
 
     - name: Load Gearbox eBPF kernel program with loader-capsule
       shell: ./loader-capsule > /tmp/loader-capsule.log
       args:
-        chdir: /root/microservice-failure-analysis/build/gearbox
+        chdir: "{{ base_dir }}/build/gearbox"
         executable: /bin/bash
 
 - import_playbook: ./update_pid.yml
